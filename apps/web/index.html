@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b2545">
+<title>Yawar Ñan — Tamizaje hematológico</title>
+<style>
+/* Diseño para una posta rural: pantalla al sol, guantes, prisa.
+   De ahí los objetivos táctiles grandes, el contraste alto y que el color
+   nunca sea el único portador de información (siempre va con texto). */
+:root{
+  --azul:#0b2545; --azul2:#134074; --tinta:#13151a; --gris:#5b6472;
+  --linea:#dfe3e8; --fondo:#f5f7fa; --panel:#fff;
+  --verde:#1b7f4b; --amarillo:#b8860b; --rojo:#c1121f; --negro:#4a0d10;
+  --radio:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--fondo);color:var(--tinta);line-height:1.5;
+  padding-bottom:env(safe-area-inset-bottom)}
+header{background:var(--azul);color:#fff;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+header h1{font-size:1.05rem;font-weight:600;letter-spacing:.2px}
+header .sub{font-size:.72rem;opacity:.75;font-weight:400}
+.chip{margin-left:auto;font-size:.7rem;padding:4px 9px;border-radius:999px;
+  background:rgba(255,255,255,.16);white-space:nowrap}
+.chip.offline{background:#7a1a20}
+main{max-width:760px;margin:0 auto;padding:16px}
+.card{background:var(--panel);border:1px solid var(--linea);border-radius:var(--radio);
+  padding:18px;margin-bottom:14px}
+.card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;
+  color:var(--gris);margin-bottom:14px;font-weight:700}
+label{display:block;font-size:.82rem;color:var(--gris);margin:12px 0 5px;font-weight:500}
+input,select{width:100%;padding:13px;font-size:1rem;border:1.5px solid var(--linea);
+  border-radius:10px;background:#fff;font-family:inherit;color:var(--tinta)}
+input:focus,select:focus{outline:none;border-color:var(--azul2)}
+.fila{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.check{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:.92rem}
+.check input{width:22px;height:22px;flex:0 0 auto}
+button{width:100%;padding:16px;font-size:1rem;font-weight:600;border:none;
+  border-radius:10px;background:var(--azul2);color:#fff;cursor:pointer;
+  font-family:inherit;margin-top:16px}
+button:disabled{background:#9aa4b2;cursor:not-allowed}
+button.sec{background:#fff;color:var(--azul2);border:1.5px solid var(--azul2);margin-top:10px}
+.nota{font-size:.78rem;color:var(--gris);margin-top:10px}
+
+/* Semáforo */
+.res{border-radius:var(--radio);padding:20px;color:#fff;margin-bottom:14px}
+.res.verde{background:var(--verde)} .res.amarillo{background:var(--amarillo)}
+.res.rojo{background:var(--rojo)} .res.negro{background:var(--negro)}
+.res.indeterminado{background:var(--gris)}
+.res .nivel{font-size:.74rem;letter-spacing:1.4px;text-transform:uppercase;opacity:.9}
+.res .titulo{font-size:1.45rem;font-weight:700;margin:4px 0 12px}
+.res .anc{font-size:2.6rem;font-weight:700;line-height:1}
+.res .anc small{font-size:.95rem;font-weight:400;opacity:.88}
+.res .ic{font-size:.82rem;opacity:.9;margin-top:4px}
+.plazo{background:rgba(0,0,0,.22);border-radius:9px;padding:11px 13px;margin-top:14px;
+  font-weight:600;font-size:.92rem}
+.accion{background:#fff;border:1px solid var(--linea);border-left:5px solid var(--azul2);
+  border-radius:9px;padding:15px;margin-bottom:14px;font-size:.94rem}
+ul.fund{list-style:none;font-size:.86rem;color:var(--gris)}
+ul.fund li{padding:7px 0 7px 16px;border-bottom:1px solid var(--linea);position:relative}
+ul.fund li:before{content:"·";position:absolute;left:4px;font-weight:700;color:var(--azul2)}
+ul.fund li:last-child{border:none}
+.avisos{background:#fff8e6;border:1px solid #f0d998;border-radius:9px;
+  padding:12px;font-size:.84rem;margin-bottom:14px;line-height:1.55}
+/* Solo el título va en bloque. Aplicarlo a todo <b> dentro de .avisos rompía
+   el énfasis en línea del texto explicativo. */
+.avisos .titulo-aviso{display:block;margin-bottom:6px;color:#8a6100;font-weight:700}
+.avisos strong{color:#8a6100}
+.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px}
+.met{background:var(--fondo);border-radius:9px;padding:11px;text-align:center}
+.met .v{font-size:1.25rem;font-weight:700}
+/* Sin uppercase: las unidades llevan µ y mayusculizarlas las vuelve
+   ilegibles o directamente falsas (µm/s pasaba a leerse "MM/S"). */
+.met .k{font-size:.7rem;color:var(--gris);letter-spacing:.2px}
+
+/* Guía de captura */
+.paso{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--linea)}
+.paso:last-child{border:none}
+.paso .n{flex:0 0 27px;height:27px;border-radius:50%;background:var(--azul2);color:#fff;
+  display:grid;place-items:center;font-size:.82rem;font-weight:700}
+.paso .t{font-size:.9rem}
+.paso .t b{display:block}
+.paso .t span{color:var(--gris);font-size:.82rem}
+.presion{margin-top:14px;padding:14px;border-radius:10px;text-align:center;font-weight:600}
+.presion.ok{background:#e3f5ea;color:var(--verde)}
+.presion.mal{background:#fdeaea;color:var(--rojo)}
+.barra{height:9px;background:var(--linea);border-radius:99px;margin:10px 0;overflow:hidden}
+.barra i{display:block;height:100%;background:var(--verde);transition:width .25s}
+.barra i.mal{background:var(--rojo)}
+
+/* Cohorte */
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--gris);padding:8px 6px;border-bottom:2px solid var(--linea)}
+td{padding:11px 6px;border-bottom:1px solid var(--linea)}
+.pill{display:inline-block;padding:3px 9px;border-radius:99px;font-size:.7rem;
+  font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px}
+.pill.verde{background:var(--verde)} .pill.amarillo{background:var(--amarillo)}
+.pill.rojo{background:var(--rojo)} .pill.negro{background:var(--negro)}
+.pill.indeterminado{background:var(--gris)}
+nav{display:flex;gap:8px;margin-bottom:14px}
+nav button{margin:0;padding:11px;font-size:.88rem;background:#fff;color:var(--azul2);
+  border:1.5px solid var(--linea)}
+nav button.on{background:var(--azul2);color:#fff;border-color:var(--azul2)}
+.oculto{display:none}
+.aviso-legal{font-size:.75rem;color:var(--gris);text-align:center;padding:20px 16px;
+  border-top:1px solid var(--linea);margin-top:10px}
+.spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.35);
+  border-top-color:#fff;border-radius:50%;animation:g .7s linear infinite;vertical-align:-2px}
+@keyframes g{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Yawar Ñan</h1>
+    <div class="sub">Tamizaje hematológico · INSN San Borja</div>
+  </div>
+  <span class="chip" id="conexion">en línea</span>
+</header>
+
+<main>
+  <nav>
+    <button class="on" data-vista="captura">Tamizaje</button>
+    <button data-vista="cohorte">Cohorte</button>
+  </nav>
+
+  <!-- ================= TAMIZAJE ================= -->
+  <section id="vista-captura">
+
+    <div class="card" id="tarjeta-datos">
+      <h2>Datos del paciente</h2>
+      <label for="pid">Código INSNSB</label>
+      <input id="pid" value="INSNSB-2026-0147" autocomplete="off">
+      <p class="nota">No se registran nombres ni DNI. Solo el código institucional.</p>
+
+      <div class="fila">
+        <div>
+          <label for="edad">Edad (años)</label>
+          <input id="edad" type="number" value="6" min="0" max="18" step="0.5">
+        </div>
+        <div>
+          <label for="temp">Temperatura (°C)</label>
+          <input id="temp" type="number" value="38.6" min="34" max="42" step="0.1">
+        </div>
+      </div>
+      <div class="fila">
+        <div>
+          <label for="dias">Días post-quimio</label>
+          <input id="dias" type="number" value="10" min="0" max="60">
+        </div>
+        <div>
+          <label for="horas">Horas al INSNSB</label>
+          <input id="horas" type="number" value="9" min="0" step="0.5">
+        </div>
+      </div>
+      <div class="check">
+        <input type="checkbox" id="cateter" checked>
+        <label for="cateter" style="margin:0">Porta catéter venoso central</label>
+      </div>
+
+      <div id="info-edad" class="avisos" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>Guía de captura</h2>
+      <div class="paso"><div class="n">1</div><div class="t">
+        <b>Limpiar y colocar el dedo</b>
+        <span>Dedo anular o medio, sin esmalte. Apoyar en el soporte hasta el tope.</span>
+      </div></div>
+      <div class="paso"><div class="n">2</div><div class="t">
+        <b>Aplicar una gota de aceite de inmersión</b>
+        <span>Reduce el reflejo de la piel y mejora mucho el contraste.</span>
+      </div></div>
+      <div class="paso"><div class="n">3</div><div class="t">
+        <b>Esperar la luz verde de presión</b>
+        <span>Si aprieta, el capilar se cierra y el resultado sale falsamente alarmante.</span>
+      </div></div>
+      <div class="paso"><div class="n">4</div><div class="t">
+        <b>Grabar 60 s en 5 capilares distintos</b>
+        <span>Con un solo capilar el resultado no es fiable.</span>
+      </div></div>
+
+      <div class="barra"><i id="barra-presion" style="width:45%"></i></div>
+      <div class="presion ok" id="estado-presion">Presión correcta — 0.28 N</div>
+      <p class="nota">Lectura del módulo ESP32 por BLE. Ventana segura 0.08–0.50 N
+        (por encima de ~0.51 N la presión supera los 30 mmHg capilares).</p>
+    </div>
+
+    <div class="card">
+      <h2>Modo demostración</h2>
+      <p class="nota" style="margin:0 0 6px">
+        Genera una captura sintética y la procesa con el pipeline real. Sirve
+        para entrenar al personal y para demostrar el flujo sin hardware.</p>
+      <label for="ancsim">ANC simulado (/µL)</label>
+      <input id="ancsim" type="number" value="380" min="20" max="15000" step="10">
+      <button id="btn-analizar">Analizar</button>
+      <button class="sec" id="btn-limpiar">Nuevo paciente</button>
+    </div>
+
+    <div id="resultado"></div>
+  </section>
+
+  <!-- ================= COHORTE ================= -->
+  <section id="vista-cohorte" class="oculto">
+    <div class="card">
+      <h2>Pacientes tamizados</h2>
+      <div id="tabla-cohorte"><p class="nota">Todavía no hay tamizajes en esta sesión.</p></div>
+      <button class="sec" id="btn-refrescar">Actualizar</button>
+    </div>
+  </section>
+</main>
+
+<p class="aviso-legal">
+  Prototipo de investigación. No es un dispositivo médico registrado.<br>
+  El tamizaje óptico <b>no sustituye al hemograma</b> y <b>no puede descartar neutropenia</b>.
+</p>
+
+<script>
+/* Dónde vive la API.
+   Cuidado con la trampa: si la interfaz se sirve como estático desde otro
+   puerto (lo habitual en desarrollo: 8080 para la web, 8000 para la API),
+   usar location.origin apunta al servidor equivocado y **todas** las llamadas
+   fallan en silencio. Se resuelve explícitamente, y se permite forzarlo con
+   ?api=... para desplegar la interfaz en un sitio distinto del backend. */
+const API = (() => {
+  const forzado = new URLSearchParams(location.search).get("api");
+  if (forzado) return forzado.replace(/\/$/, "");
+  if (location.protocol === "file:") return "http://127.0.0.1:8000";
+  if (location.port === "8000" || !location.port) return location.origin;
+  return `${location.protocol}//${location.hostname}:8000`;
+})();
+const $ = s => document.querySelector(s);
+
+/* --- estado de conexión: la posta puede quedarse sin señal en cualquier
+       momento, y la app tiene que seguir siendo usable ------------------- */
+function pintarConexion(){
+  const c = $("#conexion"), pend = cola().length;
+  if(navigator.onLine){
+    c.textContent = pend ? `sincronizando ${pend}` : "en línea";
+    c.className = "chip";
+  } else {
+    c.textContent = pend ? `sin señal · ${pend} en cola` : "sin señal";
+    c.className = "chip offline";
+  }
+}
+addEventListener("online", () => { pintarConexion(); sincronizar(); });
+addEventListener("offline", pintarConexion);
+
+/* --- cola local: nada se pierde si no hay red ----------------------------- */
+const COLA = "yawar_cola";
+const cola = () => JSON.parse(localStorage.getItem(COLA) || "[]");
+const guardarCola = c => { localStorage.setItem(COLA, JSON.stringify(c)); pintarConexion(); };
+function encolar(p){ const c = cola(); c.push(p); guardarCola(c); }
+async function sincronizar(){
+  if(!navigator.onLine) return;
+  const c = cola(); if(!c.length) return;
+  const quedan = [];
+  for(const p of c){
+    try { await fetch(`${API}/api/v1/tamizaje/simular`,
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p)}); }
+    catch { quedan.push(p); }
+  }
+  guardarCola(quedan);
+}
+
+/* --- referencia por edad: muestra en vivo el hallazgo pediátrico -------- */
+async function refrescarReferencia(){
+  const edad = parseFloat($("#edad").value);
+  if(!(edad >= 0 && edad <= 18)) return;
+  try{
+    const r = await (await fetch(`${API}/api/v1/referencia/${edad}`)).json();
+    const caja = $("#info-edad");
+    caja.style.display = "block";
+    caja.innerHTML = `<span class="titulo-aviso">Ajuste pediátrico · ${edad} años</span>` +
+      `A esta edad solo el <strong>${(r.fraccion_neutrofilos*100).toFixed(0)}%</strong> ` +
+      `de los leucocitos son neutrófilos, así que el umbral óptico correcto es ` +
+      `<strong>${r.umbral_gaps_por_min_para_anc_500} gaps/min</strong>. ` +
+      `Con el umbral del adulto (7/min) la alerta recién saltaría en un ANC de ` +
+      `<strong>${r.umbral_del_adulto_equivale_a_anc}/µL</strong>, cuando ya debería ` +
+      `haber saltado en 500.`;
+  }catch{}
+}
+$("#edad").addEventListener("change", refrescarReferencia);
+
+/* --- análisis ------------------------------------------------------------ */
+function contexto(){
+  return {
+    edad_anios: parseFloat($("#edad").value),
+    temperatura_c: parseFloat($("#temp").value) || null,
+    dias_post_quimio: parseInt($("#dias").value) || null,
+    horas_a_centro_referencia: parseFloat($("#horas").value) || null,
+    porta_cateter_central: $("#cateter").checked
+  };
+}
+
+$("#btn-analizar").addEventListener("click", async () => {
+  const btn = $("#btn-analizar");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Analizando 5 capilares…';
+
+  const peticion = {
+    paciente_id: $("#pid").value.trim() || "SIN-CODIGO",
+    contexto: contexto(),
+    anc_simulado: parseFloat($("#ancsim").value),
+    n_capilares: 5, duracion_s: 15, fps: 60,
+    semilla: Math.floor(Math.random()*10000)
+  };
+
+  try{
+    const r = await fetch(`${API}/api/v1/tamizaje/simular`,
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(peticion)});
+    if(!r.ok) throw new Error(await r.text());
+    pintarResultado(await r.json());
+  }catch(e){
+    encolar(peticion);
+    $("#resultado").innerHTML = `<div class="card">
+      <h2>Sin conexión con el servidor</h2>
+      <p>La captura quedó <b>guardada en el dispositivo</b> y se enviará sola
+      cuando haya señal. No hace falta repetirla.</p>
+      <p class="nota">${e.message}</p></div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = "Analizar";
+  }
+});
+
+$("#btn-limpiar").addEventListener("click", () => {
+  $("#resultado").innerHTML = "";
+  $("#pid").value = "INSNSB-2026-";
+  $("#pid").focus();
+});
+
+function pintarResultado(d){
+  const anc = d.anc_estimado === null ? "—" : Math.round(d.anc_estimado);
+  const ic = d.anc_ic95
+    ? `IC 95%: ${Math.round(d.anc_ic95[0])} – ${Math.round(d.anc_ic95[1])} /µL` : "";
+  const avisos = d.avisos.length
+    ? `<div class="avisos"><span class="titulo-aviso">Avisos de calidad</span>` +
+      `${d.avisos.map(a => a.replace(/_/g, " ")).join(" · ")}</div>` : "";
+
+  $("#resultado").innerHTML = `
+    <div class="res ${d.nivel}">
+      <div class="nivel">${d.nivel}</div>
+      <div class="titulo">${d.titulo}</div>
+      <div class="anc">${anc} <small>/µL estimado</small></div>
+      <div class="ic">${ic}</div>
+      <div class="plazo">⏱ ${d.plazo}</div>
+    </div>
+    <div class="accion"><b>Qué hacer:</b><br>${d.accion}</div>
+    ${avisos}
+    <div class="card">
+      <h2>Cómo se llegó a este número</h2>
+      <div class="metricas">
+        <div class="met"><div class="v">${d.gaps_detectados}</div><div class="k">gaps</div></div>
+        <div class="met"><div class="v">${d.capilares_usados}/${d.capilares_intentados}</div><div class="k">capilares</div></div>
+        <div class="met"><div class="v">${d.volumen_interrogado_nl.toFixed(2)}</div><div class="k">nL vistos</div></div>
+        <div class="met"><div class="v">${d.velocidad_media_um_s ? Math.round(d.velocidad_media_um_s) : "—"}</div><div class="k">µm/s flujo</div></div>
+        <div class="met"><div class="v">${d.diametro_medio_um ? d.diametro_medio_um.toFixed(1) : "—"}</div><div class="k">µm diámetro</div></div>
+      </div>
+      <ul class="fund">${d.fundamento.map(f => `<li>${f}</li>`).join("")}</ul>
+      <button class="sec" onclick="verHL7('${d.sesion_id}')">Ver mensaje HL7 para Galenus</button>
+    </div>`;
+  window.scrollTo({top: $("#resultado").offsetTop - 60, behavior:"smooth"});
+}
+
+async function verHL7(sid){
+  const t = await (await fetch(`${API}/api/v1/sesiones/${sid}/hl7`)).text();
+  const w = window.open("", "_blank", "width=760,height=560");
+  w.document.write(`<pre style="font:12px ui-monospace,monospace;padding:16px;
+    white-space:pre-wrap;word-break:break-all">${t.replace(/</g,"&lt;")}</pre>`);
+}
+
+/* --- cohorte ------------------------------------------------------------- */
+async function cargarCohorte(){
+  try{
+    const filas = await (await fetch(`${API}/api/v1/sesiones`)).json();
+    if(!filas.length){
+      $("#tabla-cohorte").innerHTML =
+        '<p class="nota">Todavía no hay tamizajes en esta sesión.</p>';
+      return;
+    }
+    $("#tabla-cohorte").innerHTML = `<table>
+      <tr><th>Paciente</th><th>Nivel</th><th>ANC</th><th>Plazo</th></tr>
+      ${filas.map(f => `<tr>
+        <td><b>${f.paciente_id}</b><br><span class="nota">${f.momento.replace("T"," ")}</span></td>
+        <td><span class="pill ${f.nivel}">${f.nivel}</span></td>
+        <td>${f.anc_estimado ?? "—"}</td>
+        <td>${f.plazo}</td></tr>`).join("")}
+    </table>
+    <p class="nota" style="margin-top:12px">Ordenado por urgencia, no por fecha:
+      arriba está siempre quien necesita atención antes.</p>`;
+  }catch{
+    $("#tabla-cohorte").innerHTML = '<p class="nota">Sin conexión con el servidor.</p>';
+  }
+}
+$("#btn-refrescar").addEventListener("click", cargarCohorte);
+
+/* --- navegación ---------------------------------------------------------- */
+document.querySelectorAll("nav button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("nav button").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    const v = b.dataset.vista;
+    $("#vista-captura").classList.toggle("oculto", v !== "captura");
+    $("#vista-cohorte").classList.toggle("oculto", v !== "cohorte");
+    if(v === "cohorte") cargarCohorte();
+  });
+});
+
+/* --- simulación de la lectura de presión del ESP32 ------------------------
+   En el equipo real esto llega por BLE desde el firmware. Se representa aquí
+   porque es la parte de la interfaz que más cambia el resultado: sin ella el
+   personal no tiene forma de saber que está apretando de más.             */
+let presion = 0.28;
+setInterval(() => {
+  presion += (Math.random() - 0.5) * 0.06;
+  presion = Math.max(0.02, Math.min(0.72, presion));
+  const ok = presion >= 0.08 && presion <= 0.50;
+  $("#barra-presion").style.width = `${Math.min(presion/0.72*100, 100)}%`;
+  $("#barra-presion").className = ok ? "" : "mal";
+  const el = $("#estado-presion");
+  el.className = "presion " + (ok ? "ok" : "mal");
+  el.textContent = ok
+    ? `Presión correcta — ${presion.toFixed(2)} N`
+    : (presion > 0.50
+        ? `⚠ Está apretando demasiado — ${presion.toFixed(2)} N · el capilar se cierra`
+        : `⚠ Falta contacto — ${presion.toFixed(2)} N`);
+}, 1400);
+
+pintarConexion();
+refrescarReferencia();
+sincronizar();
+</script>
+</body>
+</html>
