@@ -10,16 +10,16 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from yawar.pipeline import aggregate, analyze_clip
-from yawar.synth import (
+from michicheck.pipeline import aggregate, analyze_clip
+from michicheck.synth import (
     CapillaryState,
     OpticalSetup,
     PatientState,
     render_capture,
 )
-from yawar.triage import ClinicalContext, RiskLevel, triage
-from yawar.vision import segment_capillary, stabilize
-from yawar.vision.segment import fit_diameter_um
+from michicheck.triage import ClinicalContext, RiskLevel, triage
+from michicheck.vision import segment_capillary, stabilize
+from michicheck.vision.segment import fit_diameter_um
 
 
 @pytest.fixture(scope="module")
@@ -30,7 +30,7 @@ def setup():
 class TestSimulador:
     def test_la_tasa_simulada_sigue_al_modelo_fisico(self):
         """El simulador no puede contradecir a la fisica que dice implementar."""
-        from yawar.optics import event_rate_from_wbc
+        from michicheck.optics import event_rate_from_wbc
 
         st = OpticalSetup(duration_s=60.0)
         cap = CapillaryState()
@@ -83,8 +83,8 @@ class TestVision:
             sesgos_ajuste.append(ajustado / d)
             assert r2 > 0.85
 
-        assert np.mean(sesgos_umbral) < 0.95          # el umbral subestima
-        assert abs(np.mean(sesgos_ajuste) - 1.0) < 0.10   # el ajuste no
+        assert np.mean(sesgos_umbral) < 0.95
+        assert abs(np.mean(sesgos_ajuste) - 1.0) < 0.10
 
 
 class TestDeteccion:
@@ -124,7 +124,7 @@ class TestDeteccion:
 class TestAgregacionYTriaje:
     def test_no_concluye_con_pocos_capilares(self):
         """Con un capilar el AUC de referencia era 0.68: no basta para decidir."""
-        from yawar.pipeline import CapillaryMeasurement
+        from michicheck.pipeline import CapillaryMeasurement
 
         una = CapillaryMeasurement(
             n_events=5, duration_s=60.0, velocity_um_s=800.0,
@@ -138,7 +138,7 @@ class TestAgregacionYTriaje:
         assert any("capilares_insuficientes" in r for r in resultado.reasons)
 
     def test_la_fiebre_escala_pero_nunca_rebaja(self):
-        from yawar.pipeline import ScreeningResult
+        from michicheck.pipeline import ScreeningResult
 
         def resultado(anc, lo, hi, concluyente=True, razones=None):
             return ScreeningResult(anc, lo, hi, "x", anc / 0.5, 5, 5, 20, 0.35,
@@ -148,41 +148,41 @@ class TestAgregacionYTriaje:
         sin_fiebre = triage(resultado(420, 280, 640), ClinicalContext(6))
         con_fiebre = triage(resultado(420, 280, 640),
                             ClinicalContext(6, temperature_c=38.6))
-        assert sin_fiebre.level is RiskLevel.ROJO
-        assert con_fiebre.level is RiskLevel.NEGRO
+        assert sin_fiebre.level is RiskLevel.GRAVE
+        assert con_fiebre.level is RiskLevel.PRIORIZABLE
 
     def test_un_tamizaje_dudoso_con_fiebre_es_emergencia(self):
         """Regla de seguridad: el equipo detecta riesgo, nunca lo descarta."""
-        from yawar.pipeline import ScreeningResult
+        from michicheck.pipeline import ScreeningResult
 
         dudoso = ScreeningResult(900, 400, 2000, "x", 1800, 2, 5, 6, 0.1,
                                  800.0, 14.0, 6.0, 0.5, False,
                                  ["capilares_insuficientes (2/5)"], [])
         decision = triage(dudoso, ClinicalContext(6, temperature_c=38.5))
-        assert decision.level is RiskLevel.NEGRO
+        assert decision.level is RiskLevel.PRIORIZABLE
         assert decision.is_emergency
 
     def test_se_decide_sobre_el_limite_inferior_del_intervalo(self):
         """Estimacion puntual de 700 pero intervalo que baja de 500 -> rojo."""
-        from yawar.pipeline import ScreeningResult
+        from michicheck.pipeline import ScreeningResult
 
         ancho = ScreeningResult(700, 320, 1500, "x", 1400, 5, 5, 8, 0.2,
                                 800.0, 14.0, 6.0, 0.5, True, [], [])
-        assert triage(ancho, ClinicalContext(6)).level is RiskLevel.ROJO
+        assert triage(ancho, ClinicalContext(6)).level is RiskLevel.GRAVE
 
 
 class TestInteroperabilidad:
     """El mensaje debe ser honesto sobre lo que es y sobre a que se ajusta."""
 
     def _caso(self):
-        from yawar.pipeline import ScreeningResult
+        from michicheck.pipeline import ScreeningResult
 
         resultado = ScreeningResult(420, 280, 640, "grave", 840, 5, 5, 20, 0.35,
                                     800.0, 14.0, 6.0, 0.5, True, [], [])
         return resultado, triage(resultado, ClinicalContext(6, temperature_c=38.6))
 
     def test_el_bundle_usa_los_perfiles_nacionales_donde_existen(self):
-        from yawar.interop import build_bundle, pe_core
+        from michicheck.interop import build_bundle, pe_core
 
         resultado, decision = self._caso()
         bundle = build_bundle(resultado, decision, "INSNSB-001", device_id="yn-01")
@@ -195,7 +195,7 @@ class TestInteroperabilidad:
 
     def test_declara_donde_no_hay_perfil_nacional(self):
         """No fingir conformidad es parte del diseno, no un detalle."""
-        from yawar.interop import build_bundle
+        from michicheck.interop import build_bundle
 
         resultado, decision = self._caso()
         conformidad = build_bundle(resultado, decision, "INSNSB-001")["_conformidad"]
@@ -204,7 +204,7 @@ class TestInteroperabilidad:
 
     def test_el_resultado_viaja_siempre_como_preliminar(self):
         """Un tamizaje nunca puede entrar a la historia como un hemograma."""
-        from yawar.interop import build_bundle, build_oru_r01
+        from michicheck.interop import build_bundle, build_oru_r01
 
         resultado, decision = self._caso()
         bundle = build_bundle(resultado, decision, "INSNSB-001")
@@ -219,7 +219,7 @@ class TestInteroperabilidad:
         assert "TAMIZAJE" in mensaje.upper()
 
     def test_la_derivacion_urgente_sale_como_stat(self):
-        from yawar.interop import build_bundle
+        from michicheck.interop import build_bundle
 
         resultado, decision = self._caso()
         bundle = build_bundle(resultado, decision, "INSNSB-001")

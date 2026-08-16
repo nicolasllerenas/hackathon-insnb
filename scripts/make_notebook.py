@@ -1,4 +1,4 @@
-"""Genera notebooks/01_yawar_colab.ipynb desde un guion legible.
+"""Genera notebooks/01_michicheck_colab.ipynb desde un guion legible.
 
 Escribir JSON de notebook a mano es propenso a errores y horrible de revisar en
 un diff. Este script mantiene el contenido como texto plano y produce el .ipynb.
@@ -13,7 +13,7 @@ MD = "markdown"
 CODE = "code"
 
 CELLS: list[tuple[str, str]] = [
-(MD, r"""# Yawar Ñan — Tamizaje óptico de neutropenia grave en pediatría
+(MD, r"""# MichiCheck — Tamizaje óptico de neutropenia grave en pediatría
 
 **Hackatón Niño San Borja 2026 · Desafío 3: Ruta Hematológica**
 
@@ -48,8 +48,8 @@ if EN_COLAB:
 
 sys.path.insert(0, "src")
 import numpy as np, matplotlib.pyplot as plt
-import yawar
-print("Yawar Ñan", yawar.__version__, "· directorio:", os.getcwd())"""),
+import michicheck
+print("MichiCheck", michicheck.__version__, "· directorio:", os.getcwd())"""),
 
 (MD, r"""## 1. El modelo óptico
 
@@ -66,7 +66,7 @@ con $R$ en eventos/capilar/min, $C$ en células/µL, $v$ en µm/s y $d$ en µm.
 
 Primero: ¿reproduce el modelo los valores publicados?"""),
 
-(CODE, r"""from yawar.optics import wbc_from_event_rate, event_rate_from_wbc
+(CODE, r"""from michicheck.optics import wbc_from_event_rate, event_rate_from_wbc
 
 # Bourquard et al., Sci Rep 2018 (PMC5871877), asumiendo v=800 µm/s y d=15 µm
 print(f"32 eventos/min -> {wbc_from_event_rate(32):7.1f} células/µL   (paper: 3773)")
@@ -83,7 +83,7 @@ adulto.
 El dispositivo comercial de referencia usa un umbral fijo de ~7 gaps/min,
 derivado de adultos. Veamos qué pasa al aplicarlo a un niño."""),
 
-(CODE, r"""from yawar.optics import (anc_from_wbc, neutrophil_fraction_for_age,
+(CODE, r"""from michicheck.optics import (anc_from_wbc, neutrophil_fraction_for_age,
                           event_threshold_for_anc)
 
 edades = [1, 2, 4, 6, 10, 16, 21]
@@ -122,7 +122,7 @@ en fila india, huecos leucocitarios con estadística de Poisson, transporte
 pulsátil, absorción de Beer-Lambert sobre un cilindro, y una cámara con
 desenfoque, viñeteado, temblor de mano y ruido de fotones."""),
 
-(CODE, r"""from yawar.synth import PatientState, CapillaryState, OpticalSetup, render_capture
+(CODE, r"""from michicheck.synth import PatientState, CapillaryState, OpticalSetup, render_capture
 
 setup = OpticalSetup(duration_s=20.0, fps=60.0)
 sano  = render_capture(PatientState(age_years=8, anc_per_ul=3000),
@@ -158,9 +158,9 @@ la velocidad, se puede mirar la sangre *desde la sangre*: en la coordenada
 $\xi = s - D(t)$ el gap está quieto y su estría diagonal se vuelve una línea
 vertical. La SNR mejora en $\sqrt{n}$ con los fotogramas en que es visible."""),
 
-(CODE, r"""from yawar.vision import (stabilize, segment_capillary, extract_kymograph,
+(CODE, r"""from michicheck.vision import (stabilize, segment_capillary, extract_kymograph,
                           estimate_velocity, detect_events)
-from yawar.vision.segment import fit_diameter_um
+from michicheck.vision.segment import fit_diameter_um
 
 cap = sano
 video_est, shifts, residual = stabilize(cap.video)
@@ -247,7 +247,7 @@ con cinco. Validar por capilar metería los 5 capilares de un mismo niño en
 pliegues distintos e inflaría el AUC artificialmente."""),
 
 (CODE, r"""from pathlib import Path
-from yawar.model import FEATURE_NAMES, label_severe
+from michicheck.model import FEATURE_NAMES, label_severe
 
 RUTA = Path("data/cohorte.npz")
 if RUTA.exists():
@@ -277,7 +277,7 @@ El umbral operativo se elige por **sensibilidad objetivo**, no maximizando
 exactitud: no detectar una neutropenia grave (un niño con fiebre que se queda en
 casa) y detectarla de más (un viaje evitable) no son errores comparables."""),
 
-(CODE, r"""from yawar.model import cross_validate, YawarClassifier, evaluate
+(CODE, r"""from michicheck.model import cross_validate, MichiClassifier, evaluate
 
 proba, met = cross_validate(X, y, anc_true, n_splits=5, target_sensitivity=0.95)
 
@@ -324,7 +324,7 @@ La línea base es usar directamente el ANC físico como score.
 
 El resultado nos hizo cambiar de arquitectura a mitad del desarrollo."""),
 
-(CODE, r"""from yawar.model import physics_only_auc, cross_validate
+(CODE, r"""from michicheck.model import physics_only_auc, cross_validate
 
 filas = [("física sola (score = -log ANC)", physics_only_auc(X, y), None)]
 for etiqueta, kind, compact in [
@@ -352,17 +352,17 @@ Y hay una ventaja adicional: el modelo es auditable. Sus coeficientes tienen
 signo físicamente correcto — redescubre por su cuenta que *concentración =
 eventos / volumen*."""),
 
-(CODE, r"""clf_audit = YawarClassifier(target_sensitivity=0.95).fit(X, y, anc_true)
+(CODE, r"""clf_audit = MichiClassifier(target_sensitivity=0.95).fit(X, y, anc_true)
 for k, v in clf_audit.coefficients().items():
     print(f"  {k:24} {v:+.3f}")
 print("\n  más eventos -> menos probable neutropenia (signo negativo) ✓")
 print("  más volumen con los mismos eventos -> menor concentración (positivo) ✓")"""),
 
 (CODE, r"""#@title Entrenar el modelo final y guardarlo
-clf = YawarClassifier(target_sensitivity=0.95).fit(X, y, anc_true)
+clf = MichiClassifier(target_sensitivity=0.95).fit(X, y, anc_true)
 clf.calibrate_threshold(proba, y)
 clf.metrics_ = met
-clf.save("models/yawar_clf.pkl")
+clf.save("models/michicheck_clf.pkl")
 print(f"Modelo guardado. Umbral operativo = {clf.threshold_:.3f}")
 print(f"Corrección de ANC: log1p(ANC) = {clf.anc_correction_[0]:.3f} + {clf.anc_correction_[1]:.3f}·log1p(ANC_físico)")"""),
 
@@ -380,8 +380,8 @@ Dos reglas que no son obvias:
   puntual. Con pocos eventos el intervalo es ancho, y usar el centro sería
   fingir una precisión que no se tiene."""),
 
-(CODE, r"""from yawar.pipeline import analyze_clip, aggregate
-from yawar.triage import ClinicalContext, triage
+(CODE, r"""from michicheck.pipeline import analyze_clip, aggregate
+from michicheck.triage import ClinicalContext, triage
 
 # Caso demo: niña de 6 años, día 10 post-quimioterapia, con fiebre
 EDAD, ANC_REAL = 6.0, 380.0
@@ -421,7 +421,7 @@ En ambos, el resultado viaja marcado como *tamizaje* y *preliminar*, con su
 método explícito. Eso no es burocracia: es lo que impide que dentro de seis meses
 alguien lea este valor en la historia clínica como si fuera un hemograma."""),
 
-(CODE, r"""from yawar.interop import build_oru_r01, build_bundle
+(CODE, r"""from michicheck.interop import build_oru_r01, build_bundle
 import json
 
 print("--- HL7 v2 (ORU^R01) ---")
@@ -479,7 +479,7 @@ def build() -> dict:
 
 
 if __name__ == "__main__":
-    out = Path(__file__).resolve().parents[1] / "notebooks" / "01_yawar_colab.ipynb"
+    out = Path(__file__).resolve().parents[1] / "notebooks" / "01_michicheck_colab.ipynb"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(build(), indent=1, ensure_ascii=False), encoding="utf-8")
     n_code = sum(1 for k, _ in CELLS if k == CODE)

@@ -11,18 +11,16 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from yawar import optics
+from michicheck import optics
 
 
 class TestModeloFisico:
     """Reproduccion de Bourquard et al., Sci Rep 2018 (PMC5871877)."""
 
     def test_reproduce_valor_basal_del_paper(self):
-        # v = 800 um/s, d = 15 um: 32 eventos/min <-> 3773 celulas/uL
         assert optics.wbc_from_event_rate(32.0) == pytest.approx(3773, rel=0.01)
 
     def test_reproduce_valor_de_neutropenia_del_paper(self):
-        # 2 eventos/min <-> 236 celulas/uL
         assert optics.wbc_from_event_rate(2.0) == pytest.approx(236, rel=0.01)
 
     def test_directo_e_inverso_son_consistentes(self):
@@ -121,7 +119,7 @@ class TestIluminacion:
     """La eleccion espectral del prototipo debe sostenerse numericamente."""
 
     def test_el_verde_absorbe_mucho_menos_que_el_azul(self):
-        from yawar import illumination
+        from michicheck import illumination
 
         razon = (illumination.blood_absorption_per_um(420.0) /
                  illumination.blood_absorption_per_um(530.0))
@@ -129,14 +127,13 @@ class TestIluminacion:
 
     def test_la_melanina_castiga_mas_al_azul(self):
         """Argumento de equidad: el verde es mas parejo entre fototipos."""
-        from yawar import illumination
+        from michicheck import illumination
 
         for fototipo in ("III", "IV", "V"):
             t420 = illumination.epidermal_transmission(420.0, fototipo)
             t530 = illumination.epidermal_transmission(530.0, fototipo)
             assert t530 > t420
 
-        # Y la ventaja crece con el fototipo: es justo donde mas hace falta.
         ventaja_clara = (illumination.epidermal_transmission(530.0, "II") /
                          illumination.epidermal_transmission(420.0, "II"))
         ventaja_oscura = (illumination.epidermal_transmission(530.0, "V") /
@@ -145,14 +142,14 @@ class TestIluminacion:
 
     def test_el_verde_directo_no_alcanza_contraste_util(self):
         """Sin geometria oblicua, 530 nm no sirve. Es el riesgo de montaje #1."""
-        from yawar import illumination
+        from michicheck import illumination
 
         directo = illumination.illumination_budget(530.0, "IV", oblique=False)
         assert directo.lumen_contrast < 0.20
 
     def test_el_verde_oblicuo_iguala_al_azul_directo(self):
         """Lo que valida el diseno del prototipo."""
-        from yawar import illumination
+        from michicheck import illumination
 
         azul = illumination.illumination_budget(420.0, "IV", oblique=False)
         verde = illumination.illumination_budget(530.0, "IV", oblique=True)

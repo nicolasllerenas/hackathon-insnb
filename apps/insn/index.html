@@ -1,0 +1,1327 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0E0620">
+<title>MichiCheck · Consola INSN San Borja</title>
+<style>
+:root{
+  --tinta:#0B0518;
+  --fondo:#130826;
+  --panel:#1C0F35;
+  --panel2:#251446;
+  --borde:#3A2263;
+  --borde-claro:#4C2E7F;
+  --morado:#8B5CF6;
+  --morado-vivo:#A855F7;
+  --lila:#C4B5FD;
+  --cian:#22D3EE;
+  --menta:#34D399;
+  --ambar:#FBBF24;
+  --coral:#FB7185;
+  --texto:#F3EFFC;
+  --tenue:#A594C8;
+  --muy-tenue:#6F5F94;
+  --sombra:0 14px 34px rgba(0,0,0,.42);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:ui-sans-serif,"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(90% 50% at 100% 0%, #2E1657 0%, transparent 55%),
+    radial-gradient(70% 40% at 0% 100%, #1E1147 0%, transparent 60%),
+    var(--tinta);
+  color:var(--texto);min-height:100vh;font-size:14px;line-height:1.5}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+a{color:var(--cian)}
+
+.marco{max-width:1340px;margin:0 auto;padding:0 20px 44px}
+
+header{display:flex;align-items:center;gap:14px;padding:18px 0 14px;flex-wrap:wrap}
+.logo{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:23px;
+  background:linear-gradient(145deg,var(--morado-vivo),var(--cian));
+  box-shadow:0 8px 22px rgba(168,85,247,.4)}
+header h1{margin:0;font-size:18px;letter-spacing:-.2px}
+header .sub{font-size:11px;color:var(--tenue);letter-spacing:1.6px;text-transform:uppercase;font-weight:700}
+.espacio{margin-left:auto}
+.usuario{display:flex;align-items:center;gap:9px;padding:7px 13px;border-radius:99px;
+  background:rgba(255,255,255,.05);border:1px solid var(--borde);font-size:12.5px}
+.usuario .av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;
+  background:linear-gradient(145deg,#34D399,#22D3EE);color:#062B22;font-weight:900}
+
+.pestanas{display:flex;gap:6px;border-bottom:1px solid var(--borde);margin-bottom:20px;overflow-x:auto}
+.pestanas button{padding:11px 17px;font-size:13.5px;font-weight:700;color:var(--tenue);
+  border-bottom:2px solid transparent;white-space:nowrap;transition:.16s}
+.pestanas button:hover{color:var(--texto)}
+.pestanas button.on{color:var(--texto);border-bottom-color:var(--morado-vivo)}
+.pestanas button .cuenta{margin-left:6px;padding:1px 7px;border-radius:99px;font-size:10.5px;
+  background:rgba(168,85,247,.25);color:var(--lila);font-weight:800}
+.pestanas button .cuenta.rojo{background:rgba(251,113,133,.22);color:#FECDD3}
+
+.vista{display:none;animation:sube .26s ease}
+.vista.on{display:block}
+@keyframes sube{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:linear-gradient(155deg,var(--panel),var(--panel2));border:1px solid var(--borde);
+  border-radius:17px;padding:15px 16px;position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;right:-24px;top:-24px;width:80px;height:80px;
+  border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,.22),transparent 70%)}
+.kpi .k{font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--tenue);font-weight:800}
+.kpi .v{font-size:29px;font-weight:900;margin:5px 0 2px;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.kpi .d{font-size:11.5px;color:var(--muy-tenue)}
+.kpi.verde .v{color:var(--menta)}
+.kpi.ambar .v{color:var(--ambar)}
+.kpi.coral .v{color:var(--coral)}
+.kpi.cian .v{color:var(--cian)}
+
+.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:13px}
+.paciente{background:linear-gradient(155deg,var(--panel),var(--panel2));border:1px solid var(--borde);
+  border-radius:19px;padding:15px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+.paciente:hover{transform:translateY(-2px);border-color:var(--borde-claro);box-shadow:var(--sombra)}
+.paciente::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.paciente.estable::before{background:var(--menta)}
+.paciente.grave::before{background:var(--ambar)}
+.paciente.priorizable::before{background:var(--coral)}
+.paciente.priorizable{border-color:rgba(251,113,133,.4)}
+.fila-p{display:flex;align-items:flex-start;gap:11px;margin-bottom:11px}
+.avatar{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;
+  font-size:21px;background:rgba(0,0,0,.3);border:1px solid var(--borde)}
+.paciente h3{margin:0;font-size:15px;letter-spacing:-.2px}
+.paciente .meta{font-size:11.5px;color:var(--tenue)}
+.insignia{padding:4px 10px;border-radius:99px;font-size:10px;font-weight:900;
+  letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}
+.insignia.estable{background:rgba(52,211,153,.16);color:var(--menta);border:1px solid rgba(52,211,153,.34)}
+.insignia.grave{background:rgba(251,191,36,.16);color:var(--ambar);border:1px solid rgba(251,191,36,.34)}
+.insignia.priorizable{background:rgba(251,113,133,.18);color:var(--coral);border:1px solid rgba(251,113,133,.38)}
+.insignia.gris{background:rgba(255,255,255,.06);color:var(--tenue);border:1px solid var(--borde)}
+
+.enlace{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--tenue)}
+.punto{width:8px;height:8px;border-radius:50%;flex:none}
+.punto.en_linea{background:var(--menta);box-shadow:0 0 0 3px rgba(52,211,153,.18)}
+.punto.intermitente{background:var(--ambar);box-shadow:0 0 0 3px rgba(251,191,36,.18)}
+.punto.sin_contacto{background:var(--coral);box-shadow:0 0 0 3px rgba(251,113,133,.2);
+  animation:pulsa 1.4s ease-in-out infinite}
+@keyframes pulsa{0%,100%{opacity:1}50%{opacity:.3}}
+
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
+.mini div{background:rgba(0,0,0,.28);border-radius:11px;padding:7px 9px}
+.mini .k{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muy-tenue);font-weight:800}
+.mini .v{font-size:14px;font-weight:900;font-variant-numeric:tabular-nums}
+
+.chispa{height:54px;margin-top:11px;border-radius:9px;background:rgba(0,0,0,.24);overflow:hidden}
+
+.panel{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--borde);
+  border-radius:19px;padding:18px;margin-bottom:15px;box-shadow:var(--sombra)}
+.panel h2{margin:0 0 3px;font-size:16px;letter-spacing:-.2px}
+.panel h2 + .desc{font-size:12.5px;color:var(--tenue);margin:0 0 15px}
+.panel h3{margin:18px 0 9px;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lila)}
+
+.campos{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+label{display:block;font-size:11px;letter-spacing:.7px;text-transform:uppercase;
+  color:var(--tenue);font-weight:800;margin-bottom:5px}
+input,select,textarea{width:100%;padding:11px 13px;border-radius:12px;
+  background:rgba(0,0,0,.32);border:1px solid var(--borde);outline:none;transition:.16s}
+input:focus,select:focus,textarea:focus{border-color:var(--morado-vivo);
+  box-shadow:0 0 0 3px rgba(168,85,247,.16)}
+select option{background:#1C0F35}
+.linea{display:flex;align-items:center;gap:9px;padding:11px 13px;border-radius:12px;
+  background:rgba(0,0,0,.24);border:1px solid var(--borde);margin-top:9px}
+.linea input[type=checkbox]{width:auto;flex:none;accent-color:var(--morado-vivo);transform:scale(1.2)}
+.linea span{font-size:12.5px}
+
+.btn{padding:12px 20px;border-radius:13px;font-weight:800;font-size:13.5px;transition:.16s;
+  background:linear-gradient(145deg,var(--morado-vivo),#6D28D9);color:#fff;
+  box-shadow:0 8px 20px rgba(139,92,246,.34)}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.fantasma{background:rgba(255,255,255,.06);border:1px solid var(--borde);
+  box-shadow:none;color:var(--tenue)}
+.btn.menta{background:linear-gradient(145deg,#34D399,#059669);box-shadow:0 8px 20px rgba(52,211,153,.3)}
+.btn.coral{background:linear-gradient(145deg,#FB7185,#E11D48);box-shadow:0 8px 20px rgba(251,113,133,.3)}
+.btn.chico{padding:8px 14px;font-size:12px;border-radius:10px}
+.botonera{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 11px;font-size:10px;letter-spacing:1.1px;text-transform:uppercase;
+  color:var(--tenue);font-weight:800;border-bottom:1px solid var(--borde)}
+td{padding:11px;border-bottom:1px solid rgba(58,34,99,.5);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:rgba(168,85,247,.06)}
+.tabla-envoltura{overflow-x:auto;margin:0 -4px}
+
+.nota{font-size:12px;line-height:1.6;color:var(--tenue);background:rgba(0,0,0,.26);
+  border-left:3px solid var(--morado);border-radius:0 12px 12px 0;padding:11px 14px;margin-top:13px}
+.nota b{color:var(--texto)}
+
+.franja{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;
+  font-size:12.5px;line-height:1.55;margin-bottom:13px}
+.franja.info{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:#A5F3FC}
+.franja.alerta{background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.34);color:#FECDD3}
+.franja.ok{background:rgba(52,211,153,.11);border:1px solid rgba(52,211,153,.32);color:#A7F3D0}
+.franja.ambar{background:rgba(251,191,36,.11);border:1px solid rgba(251,191,36,.32);color:#FDE68A}
+.franja .e{font-size:17px;flex:none}
+
+.velo{position:fixed;inset:0;background:rgba(6,2,14,.82);backdrop-filter:blur(7px);
+  z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
+.velo.on{display:flex;animation:fade .2s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{width:min(760px,100%);max-height:88vh;overflow-y:auto;
+  background:linear-gradient(170deg,#251446,#150A29);border:1px solid var(--borde-claro);
+  border-radius:24px;padding:24px;box-shadow:0 30px 70px rgba(0,0,0,.6);
+  animation:pop .28s cubic-bezier(.2,1.1,.3,1)}
+@keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+.modal h2{margin:0 0 4px;font-size:20px}
+.cerrar{position:absolute;top:16px;right:18px;font-size:22px;color:var(--tenue);line-height:1}
+
+.cronologia{position:relative;padding-left:26px;margin-top:6px}
+.cronologia::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;
+  background:linear-gradient(180deg,var(--morado-vivo),transparent)}
+.hito{position:relative;padding-bottom:15px}
+.hito::before{content:"";position:absolute;left:-23px;top:4px;width:12px;height:12px;
+  border-radius:50%;background:var(--panel);border:2px solid var(--morado-vivo)}
+.hito.rojo::before{border-color:var(--coral)}
+.hito.verde::before{border-color:var(--menta)}
+.hito .cuando{font-size:10.5px;color:var(--muy-tenue);text-transform:uppercase;letter-spacing:.8px;font-weight:800}
+.hito b{display:block;font-size:13.5px;margin:2px 0}
+.hito span{font-size:12px;color:var(--tenue)}
+
+.codigo{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:19px;letter-spacing:3px;
+  text-align:center;padding:15px;border-radius:14px;background:rgba(0,0,0,.36);
+  border:1px dashed var(--borde-claro);color:var(--cian);font-weight:700;margin:12px 0}
+
+.buscador{display:flex;gap:9px;margin-bottom:15px;flex-wrap:wrap}
+.buscador input{flex:1;min-width:190px}
+.filtro{padding:9px 14px;border-radius:11px;font-size:12.5px;font-weight:700;
+  background:rgba(255,255,255,.05);border:1px solid var(--borde);color:var(--tenue);transition:.15s}
+.filtro.on{background:rgba(168,85,247,.2);border-color:var(--morado-vivo);color:var(--texto)}
+
+.pie{text-align:center;font-size:11px;color:var(--muy-tenue);padding:26px 0 4px;line-height:1.7}
+canvas{max-width:100%}
+
+body.con-tour .velo{align-items:flex-start;padding-top:26px;padding-bottom:190px}
+body.con-tour .modal{max-height:calc(100vh - 240px)}
+
+.tour{
+  position:fixed;left:0;right:0;bottom:0;z-index:95;padding:16px 24px 18px;
+  background:linear-gradient(180deg,rgba(21,10,41,.97),rgba(8,3,18,.99));
+  border-top:1px solid var(--morado-vivo);backdrop-filter:blur(14px);
+  box-shadow:0 -16px 46px rgba(0,0,0,.65);
+  transform:translateY(105%);transition:transform .4s cubic-bezier(.2,1.1,.3,1);
+}
+.tour.on{transform:translateY(0)}
+.tour .caja{max-width:1340px;margin:0 auto;display:flex;align-items:center;gap:22px}
+.tour .cuerpo{flex:1;min-width:0}
+.tour .cab{display:flex;align-items:center;gap:11px;margin-bottom:7px}
+.tour .paso{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--lila);font-weight:900;white-space:nowrap}
+.tour .pista-t{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.tour .pista-t i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--cian),var(--morado-vivo));transition:width .4s}
+.tour .txt{font-size:15px;line-height:1.55;font-weight:600}
+.tour .txt b{color:var(--cian);font-weight:800}
+.tour .ctrl{display:flex;gap:8px;flex:none}
+.tour .ctrl button{padding:11px 16px;border-radius:12px;font-size:12.5px;font-weight:800;
+  background:rgba(255,255,255,.07);border:1px solid var(--borde);white-space:nowrap}
+.tour .ctrl button.principal{background:linear-gradient(145deg,var(--morado-vivo),#6D28D9);
+  border-color:transparent;color:#fff}
+
+.foco{
+  position:fixed;z-index:94;border-radius:18px;pointer-events:none;opacity:0;
+  box-shadow:0 0 0 3px var(--cian), 0 0 0 9999px rgba(6,2,14,.6);
+  transition:.42s cubic-bezier(.2,1,.3,1);
+}
+.foco.on{opacity:1}
+
+.btn-tour{
+  padding:9px 16px;border-radius:99px;font-size:12px;font-weight:900;letter-spacing:.5px;
+  background:linear-gradient(145deg,var(--cian),var(--morado-vivo));color:#06121A;
+  box-shadow:0 6px 20px rgba(34,211,238,.35);margin-left:12px;
+}
+</style>
+</head>
+<body>
+<div class="marco">
+
+<header>
+  <div class="logo">🐱</div>
+  <div>
+    <h1>MichiCheck · Consola clínica</h1>
+    <div class="sub">Instituto Nacional de Salud del Niño San Borja</div>
+  </div>
+  <div class="espacio"></div>
+  <div class="usuario"><span class="av">HM</span>
+    <div><b>Dra. Hematología</b><div style="font-size:10.5px;color:var(--tenue)">CMP 00000 · UAIE</div></div>
+  </div>
+  <button class="btn-tour" id="btnTour">▶ DEMO</button>
+</header>
+
+<div class="pestanas">
+  <button class="on" data-ir="tablero">Tablero <span class="cuenta" id="cntTablero">0</span></button>
+  <button data-ir="alertas">Alertas <span class="cuenta rojo" id="cntAlertas">0</span></button>
+  <button data-ir="enrolar">Entregar michi</button>
+  <button data-ir="red">Red nacional</button>
+  <button data-ir="galenus">Galenus / HL7</button>
+</div>
+
+<section class="vista on" data-vista="tablero">
+  <div class="kpis" id="kpis"></div>
+  <div class="buscador">
+    <input id="busca" placeholder="Buscar por nombre, historia clínica o departamento…">
+    <button class="filtro on" data-filtro="todos">Todos</button>
+    <button class="filtro" data-filtro="priorizable">Priorizables</button>
+    <button class="filtro" data-filtro="grave">Graves</button>
+    <button class="filtro" data-filtro="sin_contacto">Sin contacto</button>
+  </div>
+  <div class="rejilla" id="rejillaPacientes"></div>
+</section>
+
+<section class="vista" data-vista="alertas">
+  <div class="panel">
+    <h2>Cola de atención</h2>
+    <p class="desc">Ordenada por lo que no puede esperar. El estado lo fija el tamizaje;
+      la fiebre solo puede subirlo, nunca bajarlo.</p>
+    <div class="tabla-envoltura">
+      <table>
+        <thead><tr><th>Paciente</th><th>Estado</th><th>Origen</th><th>Conducta</th>
+          <th>Vence</th><th></th></tr></thead>
+        <tbody id="cuerpoAlertas"></tbody>
+      </table>
+    </div>
+    <div class="nota"><b>Por qué el estado del juguete está en la misma cola.</b>
+      Un michi que lleva tres días sin comunicarse es la señal de abandono más temprana
+      que existe: llega antes que la cita perdida. Hoy el sistema se entera cuando el niño
+      ya faltó; aquí se entera cuando el juguete se calló.</div>
+  </div>
+</section>
+
+<section class="vista" data-vista="enrolar">
+  <div class="panel">
+    <h2>Entrega del michi en el primer control</h2>
+    <p class="desc">Dos minutos al final de la consulta. Lo que se captura aquí decide si
+      el sistema funciona los dos años siguientes.</p>
+
+    <h3>Paciente</h3>
+    <div class="campos">
+      <div><label>Nombre</label><input id="fNombre" value="Ana Lucía Quispe"></div>
+      <div><label>Historia clínica</label><input id="fHC" value="2026-04871"></div>
+      <div><label>Fecha de nacimiento</label><input id="fNac" type="date" value="2019-03-14"></div>
+      <div><label>Diagnóstico</label><input id="fDx" value="Leucemia linfoblástica aguda"></div>
+      <div><label>Etapa del tratamiento</label>
+        <select id="fEtapa">
+          <option value="induccion">Inducción</option>
+          <option value="consolidacion">Consolidación</option>
+          <option value="intensificacion">Intensificación</option>
+          <option value="mantenimiento" selected>Mantenimiento</option>
+          <option value="vigilancia">Vigilancia</option>
+        </select></div>
+      <div><label>Médico asignado</label><input id="fMedico" value="Dra. Hematología · CMP 00000"></div>
+    </div>
+
+    <h3>Apoderado y contacto</h3>
+    <div class="campos">
+      <div><label>Nombre</label><input id="fApo" value="Rosa Quispe"></div>
+      <div><label>Parentesco</label>
+        <select id="fParentesco"><option>madre</option><option>padre</option>
+          <option>abuela</option><option>abuelo</option><option>tutor</option></select></div>
+      <div><label>Celular</label><input id="fCel" value="987654321"></div>
+      <div><label>Canal que sí contesta</label>
+        <select id="fCanal"><option value="app">App MichiCheck</option>
+          <option value="whatsapp">WhatsApp</option><option value="sms">SMS</option>
+          <option value="llamada">Llamada</option></select></div>
+      <div><label>Sale de trabajar a las</label><input id="fSalida" type="time" value="18:30"></div>
+      <div><label>Segundo contacto</label><input id="fContacto2" value="Tío · 912345678"></div>
+    </div>
+    <div class="linea"><input type="checkbox" id="fSinHorario">
+      <span>Sin horario fijo (comercio, agricultura, jornal). Las alertas van a la ventana de la noche.</span></div>
+
+    <h3>Domicilio y accesibilidad</h3>
+    <div class="campos">
+      <div><label>Departamento</label>
+        <select id="fDepto"></select></div>
+      <div><label>Provincia</label><input id="fProv" value="Bagua"></div>
+      <div><label>Horas al INSN San Borja</label><input id="fHoras" type="number" step="0.5" value="9"></div>
+    </div>
+    <div class="linea"><input type="checkbox" id="fNoLima">
+      <span>La familia declara que <b>no puede viajar a Lima</b> para los controles</span></div>
+    <div id="cajaImpedimento" style="display:none;margin-top:9px">
+      <label>Motivo del impedimento</label>
+      <input id="fImpedimento" placeholder="Costo del pasaje, trabajo del apoderado, otros hijos a cargo…">
+    </div>
+
+    <div class="botonera">
+      <button class="btn" id="btnEnrolar">Generar ficha y vincular michi</button>
+      <button class="btn fantasma" id="btnConsentimiento">Ver texto de consentimiento</button>
+    </div>
+  </div>
+</section>
+
+<section class="vista" data-vista="red">
+  <div class="panel">
+    <h2>Red nacional de atención</h2>
+    <p class="desc">Cuando la teleconsulta concluye que hace falta atención presencial, el sistema
+      no responde «venga a Lima»: responde cuál es el establecimiento capaz más cercano.</p>
+    <div class="kpis" id="kpisRed"></div>
+    <div class="franja ambar"><span class="e">⚠️</span>
+      <span>La red oncológica pediátrica del MINSA está en <b>Lima, La Libertad, Arequipa y Cusco</b>.
+      Los otros veintiún departamentos dependen de establecimientos de continuidad —
+      y es exactamente ahí donde la teleconsulta con el INSN deja de ser un lujo.</span></div>
+    <div class="buscador">
+      <input id="buscaRed" placeholder="Buscar centro o departamento…">
+      <button class="filtro on" data-red="todos">Todos</button>
+      <button class="filtro" data-red="centro_oncologico_pediatrico">Oncológicos</button>
+      <button class="filtro" data-red="establecimiento_de_continuidad">Continuidad</button>
+    </div>
+    <div class="tabla-envoltura">
+      <table><thead><tr><th>Establecimiento</th><th>Ciudad</th><th>Departamento</th>
+        <th>Nivel</th><th>Resuelve</th></tr></thead>
+      <tbody id="cuerpoRed"></tbody></table>
+    </div>
+    <div class="nota">Fuente: red MINSA de diez hospitales de referencia para cáncer infantil
+      más los hospitales regionales con capacidad de hemograma, hemocultivo, antibiótico de
+      amplio espectro, transfusión y hospitalización pediátrica.
+      <b>Los códigos RENIPRESS deben confirmarse contra el padrón oficial antes de uso asistencial.</b></div>
+  </div>
+</section>
+
+<section class="vista" data-vista="galenus">
+  <div class="panel">
+    <h2>Salida hacia Galenus</h2>
+    <p class="desc">Cada tamizaje sale del michi como mensaje HL7 v2 ORU^R01 y como recurso
+      FHIR R4 con perfiles nacionales. No es un tablero aparte: entra al HIS que el
+      instituto ya usa.</p>
+    <div class="franja info"><span class="e">🔒</span>
+      <span>El resultado viaja siempre marcado como <b>preliminar</b> y con el método explícito.
+      Nunca puede confundirse con un hemograma en la historia clínica.</span></div>
+    <div class="campos" style="margin-bottom:14px">
+      <div><label>Paciente</label><select id="selMensaje"></select></div>
+      <div><label>Formato</label><select id="selFormato">
+        <option value="hl7">HL7 v2 · ORU^R01</option>
+        <option value="fhir">FHIR R4 · Bundle</option></select></div>
+    </div>
+    <pre id="salidaMensaje" style="background:rgba(0,0,0,.42);border:1px solid var(--borde);
+      border-radius:14px;padding:16px;overflow-x:auto;font-size:11.5px;line-height:1.7;
+      color:#C4B5FD;margin:0"></pre>
+    <div class="nota"><b>Estado real de la integración.</b> El INSN San Borja usa Galenus como HIS.
+      El perfil nacional HL7.FHIR.PE.CORE existe y está publicado. Lo que falta no es
+      capacidad técnica sino el acuerdo de interoperabilidad con la OGTI del instituto:
+      credenciales, endpoint y ambiente de pruebas.</div>
+  </div>
+</section>
+
+<div class="pie">
+  MichiCheck · Hackatón Niño San Borja 2026 · Desafío 3: Ruta Hematológica<br>
+  Tamizaje óptico no invasivo. Orienta y prioriza; no diagnostica ni reemplaza el hemograma.
+</div>
+</div>
+
+<div class="foco" id="foco"></div>
+<div class="tour" id="tour">
+  <div class="caja">
+    <div class="cuerpo">
+      <div class="cab">
+        <span class="paso" id="tourPaso">1 / 12</span>
+        <span class="pista-t"><i id="tourBarra" style="width:0%"></i></span>
+      </div>
+      <div class="txt" id="tourTexto"></div>
+    </div>
+    <div class="ctrl">
+      <button id="tourAnterior">◀ Atrás</button>
+      <button id="tourPausa" class="principal">⏸ Pausa</button>
+      <button id="tourSiguiente">Siguiente ▶</button>
+      <button id="tourSalir">✕</button>
+    </div>
+  </div>
+</div>
+
+<div class="velo" id="velo"><div class="modal" style="position:relative" id="modal"></div></div>
+
+<script>
+"use strict";
+
+const RED = [
+  {c:"INSNSB",n:"Instituto Nacional de Salud del Niño San Borja",niv:"centro_oncologico_pediatrico",dep:"Lima",ciu:"Lima",h:0,tras:true},
+  {c:"INEN",n:"Instituto Nacional de Enfermedades Neoplásicas",niv:"centro_oncologico_pediatrico",dep:"Lima",ciu:"Lima",h:0,tras:true},
+  {c:"INSNB",n:"Instituto Nacional de Salud del Niño (Breña)",niv:"centro_oncologico_pediatrico",dep:"Lima",ciu:"Lima",h:0},
+  {c:"HNDM",n:"Hospital Nacional Dos de Mayo",niv:"centro_oncologico_pediatrico",dep:"Lima",ciu:"Lima",h:0},
+  {c:"HCH",n:"Hospital Cayetano Heredia",niv:"centro_oncologico_pediatrico",dep:"Lima",ciu:"Lima",h:0},
+  {c:"HBT",n:"Hospital Belén de Trujillo",niv:"centro_oncologico_pediatrico",dep:"La Libertad",ciu:"Trujillo",h:9},
+  {c:"IRENSUR",n:"IREN Sur",niv:"centro_oncologico_pediatrico",dep:"Arequipa",ciu:"Arequipa",h:16},
+  {c:"HRHD",n:"Hospital Regional Honorio Delgado Espinoza",niv:"centro_oncologico_pediatrico",dep:"Arequipa",ciu:"Arequipa",h:16},
+  {c:"HAL",n:"Hospital Antonio Lorena del Cusco",niv:"centro_oncologico_pediatrico",dep:"Cusco",ciu:"Cusco",h:21},
+  {c:"HRC",n:"Hospital Regional del Cusco",niv:"centro_oncologico_pediatrico",dep:"Cusco",ciu:"Cusco",h:21},
+  {c:"HRDLM",n:"Hospital Regional Docente Las Mercedes",niv:"establecimiento_de_continuidad",dep:"Lambayeque",ciu:"Chiclayo",h:11},
+  {c:"HJCH",n:"Hospital José Cayetano Heredia",niv:"establecimiento_de_continuidad",dep:"Piura",ciu:"Piura",h:14},
+  {c:"HRVF",n:"Hospital Regional Virgen de Fátima",niv:"establecimiento_de_continuidad",dep:"Amazonas",ciu:"Chachapoyas",h:20,parcial:true},
+  {c:"HRCAJ",n:"Hospital Regional Docente de Cajamarca",niv:"establecimiento_de_continuidad",dep:"Cajamarca",ciu:"Cajamarca",h:14},
+  {c:"HTAR",n:"Hospital II-2 Tarapoto",niv:"establecimiento_de_continuidad",dep:"San Martín",ciu:"Tarapoto",h:24},
+  {c:"HRL",n:"Hospital Regional de Loreto Felipe Santiago Arriola",niv:"establecimiento_de_continuidad",dep:"Loreto",ciu:"Iquitos",h:2},
+  {c:"HRP",n:"Hospital Regional de Pucallpa",niv:"establecimiento_de_continuidad",dep:"Ucayali",ciu:"Pucallpa",h:18},
+  {c:"HRHV",n:"Hospital Regional Hermilio Valdizán",niv:"establecimiento_de_continuidad",dep:"Huánuco",ciu:"Huánuco",h:8},
+  {c:"HDACP",n:"Hospital Daniel Alcides Carrión de Pasco",niv:"establecimiento_de_continuidad",dep:"Pasco",ciu:"Cerro de Pasco",h:8,parcial:true},
+  {c:"HELCARMEN",n:"Hospital Regional Docente Materno Infantil El Carmen",niv:"establecimiento_de_continuidad",dep:"Junín",ciu:"Huancayo",h:7},
+  {c:"HRA",n:"Hospital Regional de Ayacucho",niv:"establecimiento_de_continuidad",dep:"Ayacucho",ciu:"Ayacucho",h:9},
+  {c:"HRZCV",n:"Hospital Regional Zacarías Correa Valdivia",niv:"establecimiento_de_continuidad",dep:"Huancavelica",ciu:"Huancavelica",h:11,parcial:true},
+  {c:"HRICA",n:"Hospital Regional de Ica",niv:"establecimiento_de_continuidad",dep:"Ica",ciu:"Ica",h:4.5},
+  {c:"HRMNB",n:"Hospital Regional Manuel Núñez Butrón",niv:"establecimiento_de_continuidad",dep:"Puno",ciu:"Puno",h:20},
+  {c:"HHUT",n:"Hospital Hipólito Unanue de Tacna",niv:"establecimiento_de_continuidad",dep:"Tacna",ciu:"Tacna",h:19},
+  {c:"HRM",n:"Hospital Regional de Moquegua",niv:"establecimiento_de_continuidad",dep:"Moquegua",ciu:"Moquegua",h:18,parcial:true},
+  {c:"HSRPM",n:"Hospital Santa Rosa de Puerto Maldonado",niv:"establecimiento_de_continuidad",dep:"Madre de Dios",ciu:"Puerto Maldonado",h:3,parcial:true},
+  {c:"HRDA",n:"Hospital Regional Guillermo Díaz de la Vega",niv:"establecimiento_de_continuidad",dep:"Apurímac",ciu:"Abancay",h:16,parcial:true},
+  {c:"HEGB",n:"Hospital Regional Eleazar Guzmán Barrón",niv:"establecimiento_de_continuidad",dep:"Áncash",ciu:"Chimbote",h:6},
+  {c:"HJAMO",n:"Hospital Regional José Alfredo Mendoza Olavarría",niv:"establecimiento_de_continuidad",dep:"Tumbes",ciu:"Tumbes",h:18,parcial:true}
+];
+
+const DEPARTAMENTOS = ["Amazonas","Áncash","Apurímac","Arequipa","Ayacucho","Cajamarca","Callao",
+  "Cusco","Huancavelica","Huánuco","Ica","Junín","La Libertad","Lambayeque","Lima","Loreto",
+  "Madre de Dios","Moquegua","Pasco","Piura","Puno","San Martín","Tacna","Tumbes","Ucayali"];
+
+const ETAPAS = {
+  induccion:{n:"Inducción",tam:2,ctrl:3,riesgo:"bajo"},
+  consolidacion:{n:"Consolidación",tam:3,ctrl:7,riesgo:"moderado"},
+  intensificacion:{n:"Intensificación",tam:2,ctrl:7,riesgo:"moderado"},
+  mantenimiento:{n:"Mantenimiento",tam:7,ctrl:30,riesgo:"alto"},
+  vigilancia:{n:"Vigilancia",tam:30,ctrl:90,riesgo:"moderado"}
+};
+
+const CONDUCTA = {
+  estable:{t:"Estable",a:"Basta el recordatorio de audio del michi. Sigue el calendario.",v:"—"},
+  grave:{t:"Grave",a:"Teleconsulta con el médico asignado el mismo día.",v:"6 h"},
+  priorizable:{t:"Priorizable",a:"Teleconsulta prioritaria con opción de ingreso por emergencia.",v:"15 min"}
+};
+
+function serie(n, base, amplitud){
+  const out = [];
+  let v = base;
+  for(let i = 0; i < n; i++){
+    v += (Math.random() - .48) * amplitud;
+    v = Math.max(60, Math.min(2600, v));
+    out.push(Math.round(v));
+  }
+  return out;
+}
+
+let PACIENTES = [
+  {id:"P1", nombre:"Ana Lucía Quispe", hc:"2026-04871", edad:7.2, sexo:"F", dep:"Amazonas", prov:"Bagua",
+   horas:9, noLima:true, impedimento:"Costo del pasaje y trabajo del apoderado",
+   etapa:"mantenimiento", estado:"estable", enlace:"en_linea", bateria:78, michi:"MC-3F7A21C0",
+   apoderado:"Rosa Quispe (madre)", cel:"987654321", salida:"18:30",
+   anc:1180, ic:[496,2830], traj:serie(9, 1150, 420), ultimo:"hace 6 h",
+   adherencia:0.92, postergaciones:0, alertasEnviadas:34, alertasAtendidas:31},
+  {id:"P2", nombre:"Diego Mamani", hc:"2025-03112", edad:5.4, sexo:"M", dep:"Puno", prov:"Azángaro",
+   horas:20, noLima:true, impedimento:"Tres hijos menores a cargo",
+   etapa:"mantenimiento", estado:"grave", enlace:"en_linea", bateria:41, michi:"MC-9B2E4471",
+   apoderado:"Julia Mamani (madre)", cel:"956781234", salida:"19:00",
+   anc:390, ic:[164,936], traj:serie(9, 700, 380), ultimo:"hace 40 min",
+   adherencia:0.81, postergaciones:1, alertasEnviadas:52, alertasAtendidas:41},
+  {id:"P3", nombre:"Mateo Ríos", hc:"2026-05590", edad:9.1, sexo:"M", dep:"Loreto", prov:"Maynas",
+   horas:2, noLima:false, impedimento:"",
+   etapa:"intensificacion", estado:"priorizable", enlace:"en_linea", bateria:63, michi:"MC-C104D8AA",
+   apoderado:"Luis Ríos (padre)", cel:"943210987", salida:"17:30",
+   anc:180, ic:[76,432], traj:serie(9, 520, 300), ultimo:"hace 12 min", fiebre:38.6,
+   adherencia:0.88, postergaciones:0, alertasEnviadas:19, alertasAtendidas:18},
+  {id:"P4", nombre:"Valentina Huamán", hc:"2025-02233", edad:4.8, sexo:"F", dep:"Junín", prov:"Huancayo",
+   horas:7, noLima:false, impedimento:"",
+   etapa:"mantenimiento", estado:"estable", enlace:"intermitente", bateria:22, michi:"MC-77E0B3F2",
+   apoderado:"Carmen Huamán (madre)", cel:"921334455", salida:"18:00",
+   anc:1420, ic:[596,3408], traj:serie(9, 1300, 350), ultimo:"hace 2 días",
+   adherencia:0.74, postergaciones:2, alertasEnviadas:61, alertasAtendidas:39},
+  {id:"P5", nombre:"Joaquín Ccahuana", hc:"2026-06104", edad:11.3, sexo:"M", dep:"Cusco", prov:"Quispicanchi",
+   horas:21, noLima:true, impedimento:"El apoderado perdió el trabajo",
+   etapa:"mantenimiento", estado:"estable", enlace:"sin_contacto", bateria:0, michi:"MC-51AC90DD",
+   apoderado:"Marta Ccahuana (abuela)", cel:"934567812", salida:"20:00",
+   anc:980, ic:[412,2352], traj:serie(6, 1050, 300), ultimo:"hace 5 días",
+   adherencia:0.55, postergaciones:4, alertasEnviadas:47, alertasAtendidas:19},
+  {id:"P6", nombre:"Camila Flores", hc:"2026-04002", edad:6.6, sexo:"F", dep:"Lima", prov:"Lima",
+   horas:0.5, noLima:false, impedimento:"",
+   etapa:"induccion", estado:"estable", enlace:"en_linea", bateria:91, michi:"MC-2D8F16BB",
+   apoderado:"Ana Flores (madre)", cel:"999112233", salida:"18:00",
+   anc:1620, ic:[680,3888], traj:serie(9, 1500, 400), ultimo:"hace 3 h",
+   adherencia:0.97, postergaciones:0, alertasEnviadas:22, alertasAtendidas:22}
+];
+
+PACIENTES.forEach(p => { p.traj = p.traj.slice(0, -1).concat(p.anc); });
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ICONO = {F:"👧", M:"👦"};
+
+let filtro = "todos", filtroRed = "todos";
+
+function pesoEstado(p){
+  if(p.enlace === "sin_contacto") return 3.5;
+  return {priorizable:4, grave:3, estable:1}[p.estado] || 0;
+}
+
+function pintarKpis(){
+  const total = PACIENTES.length;
+  const pri = PACIENTES.filter(p => p.estado === "priorizable").length;
+  const gra = PACIENTES.filter(p => p.estado === "grave").length;
+  const mudos = PACIENTES.filter(p => p.enlace === "sin_contacto").length;
+  const fuera = PACIENTES.filter(p => p.dep !== "Lima").length;
+  const horas = PACIENTES.filter(p => p.noLima).reduce((a, p) => a + p.horas * 2, 0);
+  $("#kpis").innerHTML = `
+    <div class="kpi cian"><div class="k">En seguimiento</div><div class="v">${total}</div>
+      <div class="d">${fuera} fuera de Lima</div></div>
+    <div class="kpi coral"><div class="k">Priorizables</div><div class="v">${pri}</div>
+      <div class="d">teleconsulta + emergencia</div></div>
+    <div class="kpi ambar"><div class="k">Graves</div><div class="v">${gra}</div>
+      <div class="d">teleconsulta el mismo día</div></div>
+    <div class="kpi coral"><div class="k">Michis sin contacto</div><div class="v">${mudos}</div>
+      <div class="d">señal temprana de abandono</div></div>
+    <div class="kpi verde"><div class="k">Horas de viaje evitadas</div><div class="v">${Math.round(horas)}</div>
+      <div class="d">este mes, por referencia local</div></div>`;
+  $("#cntTablero").textContent = total;
+  const urgentes = pri + gra + mudos;
+  $("#cntAlertas").textContent = urgentes;
+}
+
+function chispa(datos, ancho, alto){
+  const c = document.createElement("canvas");
+  const dpr = window.devicePixelRatio || 1;
+  c.width = ancho * dpr; c.height = alto * dpr;
+  c.style.width = ancho + "px"; c.style.height = alto + "px";
+  const g = c.getContext("2d"); g.scale(dpr, dpr);
+  const min = 0, max = 2000;
+  const x = i => (i / (datos.length - 1)) * (ancho - 6) + 3;
+  const y = v => alto - 4 - ((Math.min(max, v) - min) / (max - min)) * (alto - 8);
+
+  g.fillStyle = "rgba(52,211,153,.16)";
+  g.fillRect(0, y(1500), ancho, y(500) - y(1500));
+  g.setLineDash([3,3]); g.lineWidth = 1;
+  g.strokeStyle = "rgba(251,113,133,.6)";
+  g.beginPath(); g.moveTo(0, y(500)); g.lineTo(ancho, y(500)); g.stroke();
+  g.strokeStyle = "rgba(251,191,36,.45)";
+  g.beginPath(); g.moveTo(0, y(1500)); g.lineTo(ancho, y(1500)); g.stroke();
+  g.setLineDash([]);
+
+  g.beginPath();
+  datos.forEach((v, i) => i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)));
+  g.strokeStyle = "#A855F7"; g.lineWidth = 2; g.lineJoin = "round"; g.stroke();
+  const ult = datos[datos.length - 1];
+  g.beginPath(); g.arc(x(datos.length - 1), y(ult), 3.2, 0, 7);
+  g.fillStyle = ult < 500 ? "#FB7185" : ult > 1500 ? "#FBBF24" : "#34D399"; g.fill();
+  return c;
+}
+
+function pintarPacientes(){
+  const q = ($("#busca").value || "").toLowerCase();
+  const lista = PACIENTES
+    .filter(p => filtro === "todos" ? true
+      : filtro === "sin_contacto" ? p.enlace === "sin_contacto" : p.estado === filtro)
+    .filter(p => !q || (p.nombre + p.hc + p.dep + p.prov).toLowerCase().includes(q))
+    .sort((a, b) => pesoEstado(b) - pesoEstado(a));
+
+  const cont = $("#rejillaPacientes");
+  cont.innerHTML = lista.map(p => `
+    <div class="paciente ${p.estado}" data-p="${p.id}">
+      <div class="fila-p">
+        <div class="avatar">${ICONO[p.sexo]}</div>
+        <div style="flex:1;min-width:0">
+          <h3>${esc(p.nombre)}</h3>
+          <div class="meta">${p.edad.toFixed(1)} años · HC ${p.hc}</div>
+          <div class="meta">${esc(p.prov)}, ${esc(p.dep)}${p.noLima ? " · no puede viajar a Lima" : ""}</div>
+        </div>
+        <span class="insignia ${p.estado}">${CONDUCTA[p.estado].t}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <span class="enlace"><span class="punto ${p.enlace}"></span>
+          ${p.enlace.replace("_"," ")} · ${p.ultimo}</span>
+        <span class="insignia gris">${ETAPAS[p.etapa].n}</span>
+      </div>
+      <div class="mini">
+        <div><div class="k">ANC est.</div><div class="v" style="color:${
+          p.anc < 500 ? "var(--coral)" : p.anc > 1500 ? "var(--ambar)" : "var(--menta)"}">${p.anc}</div></div>
+        <div><div class="k">Adherencia</div><div class="v">${Math.round(p.adherencia*100)}%</div></div>
+        <div><div class="k">Batería</div><div class="v" style="color:${
+          p.bateria < 25 ? "var(--coral)" : "inherit"}">${p.bateria}%</div></div>
+      </div>
+      <div class="chispa" data-chispa="${p.id}"></div>
+    </div>`).join("") || `<div class="panel"><p class="desc">Sin resultados.</p></div>`;
+
+  lista.forEach(p => {
+    const caja = cont.querySelector(`[data-chispa="${p.id}"]`);
+    if(caja) caja.appendChild(chispa(p.traj, caja.clientWidth || 280, 54));
+  });
+  cont.querySelectorAll("[data-p]").forEach(el =>
+    el.onclick = () => abrirPaciente(PACIENTES.find(p => p.id === el.dataset.p)));
+}
+
+function pintarAlertas(){
+  const filas = PACIENTES
+    .filter(p => p.estado !== "estable" || p.enlace === "sin_contacto" || p.postergaciones >= 3)
+    .sort((a, b) => pesoEstado(b) - pesoEstado(a));
+  $("#cuerpoAlertas").innerHTML = filas.map(p => {
+    const mudo = p.enlace === "sin_contacto";
+    const origen = mudo ? "Michi sin comunicación"
+      : p.fiebre ? `Tamizaje + fiebre ${p.fiebre} °C` : "Tamizaje";
+    const estado = mudo && p.estado === "estable" ? "grave" : p.estado;
+    const conducta = mudo && p.estado === "estable"
+      ? "Contacto telefónico y visita domiciliaria. El michi lleva 5 días callado."
+      : CONDUCTA[estado].a;
+    return `<tr>
+      <td><b>${esc(p.nombre)}</b><div style="font-size:11.5px;color:var(--tenue)">
+        ${esc(p.prov)}, ${esc(p.dep)} · ${ETAPAS[p.etapa].n}</div></td>
+      <td><span class="insignia ${estado}">${CONDUCTA[estado].t}</span></td>
+      <td style="font-size:12.5px">${origen}</td>
+      <td style="font-size:12.5px;max-width:290px">${conducta}</td>
+      <td style="font-variant-numeric:tabular-nums">${CONDUCTA[estado].v}</td>
+      <td><button class="btn chico" data-abrir="${p.id}">Abrir</button></td></tr>`;
+  }).join("") || `<tr><td colspan="6" style="color:var(--tenue)">Nada pendiente.</td></tr>`;
+  $$("[data-abrir]").forEach(b =>
+    b.onclick = () => abrirPaciente(PACIENTES.find(p => p.id === b.dataset.abrir)));
+}
+
+function grafico(datos, ancho, alto){
+  const c = document.createElement("canvas");
+  const dpr = window.devicePixelRatio || 1;
+  c.width = ancho * dpr; c.height = alto * dpr;
+  c.style.width = "100%"; c.style.height = alto + "px";
+  const g = c.getContext("2d"); g.scale(dpr, dpr);
+  const izq = 44, abajo = 22, arriba = 12, der = 10;
+  const max = 2200;
+  const x = i => izq + (i / Math.max(1, datos.length - 1)) * (ancho - izq - der);
+  const y = v => arriba + (1 - Math.min(max, v) / max) * (alto - arriba - abajo);
+
+  g.fillStyle = "rgba(52,211,153,.09)";
+  g.fillRect(izq, y(1500), ancho - izq - der, y(500) - y(1500));
+  g.font = "10px ui-sans-serif, system-ui";
+  [0, 500, 1000, 1500, 2000].forEach(v => {
+    g.strokeStyle = v === 500 ? "rgba(251,113,133,.55)"
+      : v === 1500 ? "rgba(251,191,36,.45)" : "rgba(255,255,255,.07)";
+    g.setLineDash(v === 500 || v === 1500 ? [4,4] : []);
+    g.beginPath(); g.moveTo(izq, y(v)); g.lineTo(ancho - der, y(v)); g.stroke();
+    g.setLineDash([]);
+    g.fillStyle = "#6F5F94"; g.textAlign = "right";
+    g.fillText(String(v), izq - 7, y(v) + 3);
+  });
+  g.fillStyle = "#34D399"; g.textAlign = "left";
+  g.fillText("ventana terapéutica del mantenimiento", izq + 6, y(1500) + 13);
+
+  g.beginPath();
+  datos.forEach((v, i) => i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v)));
+  const deg = g.createLinearGradient(izq, 0, ancho, 0);
+  deg.addColorStop(0, "#22D3EE"); deg.addColorStop(1, "#A855F7");
+  g.strokeStyle = deg; g.lineWidth = 2.6; g.lineJoin = "round"; g.stroke();
+  datos.forEach((v, i) => {
+    g.beginPath(); g.arc(x(i), y(v), 3.6, 0, 7);
+    g.fillStyle = v < 500 ? "#FB7185" : v > 1500 ? "#FBBF24" : "#34D399"; g.fill();
+    g.strokeStyle = "#150A29"; g.lineWidth = 1.5; g.stroke();
+  });
+  g.fillStyle = "#6F5F94"; g.textAlign = "center";
+  g.fillText("← más antiguo · " + datos.length + " tamizajes · hoy →", ancho / 2, alto - 5);
+  return c;
+}
+
+function abrirPaciente(p){
+  if(!p) return;
+  const mudo = p.enlace === "sin_contacto";
+  const estado = mudo && p.estado === "estable" ? "grave" : p.estado;
+  const hitos = [
+    {c:"verde", t:"Michi entregado", d:"Primer control · vinculación " + p.michi, w:"hace 4 meses"},
+    {c:"", t:"Paso a " + ETAPAS[p.etapa].n, d:"El calendario de alertas se rehizo", w:"hace 3 meses"},
+    {c:p.postergaciones >= 2 ? "rojo" : "", t:"Alertas enviadas: " + p.alertasEnviadas,
+     d:p.alertasAtendidas + " atendidas · " + p.postergaciones + " postergaciones seguidas", w:"acumulado"},
+    {c:estado === "estable" ? "verde" : "rojo", t:"Último tamizaje: " + CONDUCTA[estado].t,
+     d:`ANC ${p.anc}/µL (IC95 ${p.ic[0]}–${p.ic[1]})`, w:p.ultimo}
+  ];
+  if(mudo) hitos.push({c:"rojo", t:"El michi dejó de comunicarse",
+    d:"Sin latido desde hace 5 días. Batería en 0% o dispositivo apagado.", w:"ahora"});
+
+  abrirModal(`
+    <button class="cerrar" onclick="cerrarModal()">×</button>
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:6px">
+      <div class="avatar" style="width:52px;height:52px;font-size:26px">${ICONO[p.sexo]}</div>
+      <div style="flex:1">
+        <h2>${esc(p.nombre)}</h2>
+        <div style="font-size:12.5px;color:var(--tenue)">
+          ${p.edad.toFixed(1)} años · HC ${p.hc} · ${esc(p.prov)}, ${esc(p.dep)} ·
+          ${p.horas} h al INSN</div>
+      </div>
+      <span class="insignia ${estado}">${CONDUCTA[estado].t}</span>
+    </div>
+
+    ${p.fiebre ? `<div class="franja alerta"><span class="e">🌡️</span>
+      <span><b>Fiebre ${p.fiebre} °C con tamizaje compatible con neutropenia.</b>
+      Se maneja como neutropenia febril: antibiótico de amplio espectro en la primera hora.
+      La fiebre escala el estado y nunca lo rebaja.</span></div>` : ""}
+    ${mudo ? `<div class="franja alerta"><span class="e">📵</span>
+      <span><b>El michi lleva 5 días sin comunicarse.</b> Es la señal de abandono más
+      temprana del sistema: llega antes que la cita perdida. Adherencia declarada
+      ${Math.round(p.adherencia*100)}%, ${p.postergaciones} postergaciones seguidas.</span></div>` : ""}
+
+    <h3 style="margin:18px 0 8px;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lila)">
+      Trayectoria del recuento</h3>
+    <div id="cajaGrafico"></div>
+    <div class="nota">Un hemograma mensual da un punto al mes. El michi da una línea.
+      Lo que importa en el mantenimiento no es el valor de hoy sino <b>hacia dónde va</b>:
+      esta trayectoria es la que permite ajustar la dosis de 6-MP sin que el niño viaje.</div>
+
+    <div class="campos" style="margin-top:18px">
+      <div><label>Apoderado</label><div style="font-weight:700">${esc(p.apoderado)}</div>
+        <div style="font-size:12px;color:var(--tenue)">${p.cel} · alertas después de ${p.salida}</div></div>
+      <div><label>Michi</label><div style="font-weight:700">${p.michi}</div>
+        <div style="font-size:12px;color:var(--tenue)">batería ${p.bateria}% · ${p.enlace.replace("_"," ")}</div></div>
+      <div><label>Adherencia a las alertas</label>
+        <div style="font-weight:700">${p.alertasAtendidas}/${p.alertasEnviadas}
+          (${Math.round(p.alertasAtendidas/p.alertasEnviadas*100)}%)</div>
+        <div style="font-size:12px;color:var(--tenue)">${p.postergaciones} postergaciones seguidas</div></div>
+    </div>
+
+    <h3 style="margin:20px 0 4px;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lila)">
+      Cronología</h3>
+    <div class="cronologia">${hitos.map(h => `<div class="hito ${h.c}">
+      <div class="cuando">${h.w}</div><b>${h.t}</b><span>${h.d}</span></div>`).join("")}</div>
+
+    <div class="botonera">
+      ${estado !== "estable" ? `<button class="btn ${estado === "priorizable" ? "coral" : ""}"
+        onclick="abrirTeleconsulta('${p.id}')">Abrir teleconsulta ${
+        estado === "priorizable" ? "prioritaria" : ""}</button>` : ""}
+      ${p.noLima ? `<button class="btn menta" onclick="abrirReferencia('${p.id}')">Generar referencia local</button>` : ""}
+      <button class="btn fantasma" onclick="verMensaje('${p.id}')">Ver salida a Galenus</button>
+      <button class="btn fantasma" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  `);
+  const caja = $("#cajaGrafico");
+  caja.appendChild(grafico(p.traj, caja.clientWidth || 640, 190));
+}
+
+function capacidadesPara(estado, fiebre){
+  if(fiebre) return ["hemocultivo", "antibiótico de amplio espectro", "hospitalización pediátrica"];
+  if(estado === "priorizable") return ["hemograma", "transfusión", "hospitalización pediátrica"];
+  return ["hemograma"];
+}
+
+const VECINOS = {
+  "Amazonas":["Cajamarca","San Martín","Lambayeque","La Libertad"],
+  "Áncash":["La Libertad","Lima","Huánuco"],
+  "Apurímac":["Cusco","Ayacucho","Arequipa"],
+  "Arequipa":["Moquegua","Puno","Cusco","Ica"],
+  "Ayacucho":["Huancavelica","Junín","Apurímac","Ica"],
+  "Cajamarca":["Lambayeque","La Libertad","Amazonas","Piura"],
+  "Callao":["Lima"],
+  "Cusco":["Apurímac","Puno","Arequipa","Madre de Dios"],
+  "Huancavelica":["Junín","Ayacucho","Ica","Lima"],
+  "Huánuco":["Pasco","Junín","Áncash","Ucayali","San Martín"],
+  "Ica":["Lima","Ayacucho","Huancavelica","Arequipa"],
+  "Junín":["Pasco","Huancavelica","Ayacucho","Huánuco","Lima"],
+  "La Libertad":["Lambayeque","Cajamarca","Áncash","San Martín"],
+  "Lambayeque":["La Libertad","Cajamarca","Piura","Amazonas"],
+  "Lima":["Ica","Junín","Áncash","Huánuco","Pasco"],
+  "Loreto":["San Martín","Ucayali","Amazonas"],
+  "Madre de Dios":["Cusco","Puno","Ucayali"],
+  "Moquegua":["Arequipa","Tacna","Puno"],
+  "Pasco":["Junín","Huánuco","Lima","Ucayali"],
+  "Piura":["Lambayeque","Tumbes","Cajamarca"],
+  "Puno":["Cusco","Arequipa","Moquegua","Madre de Dios"],
+  "San Martín":["Loreto","Amazonas","La Libertad","Huánuco","Ucayali"],
+  "Tacna":["Moquegua","Puno"],
+  "Tumbes":["Piura"],
+  "Ucayali":["Huánuco","Pasco","Loreto","Madre de Dios"]
+};
+
+function salto(origen, destino){
+  if(origen === destino) return 0;
+  if((VECINOS[origen] || []).includes(destino)) return 1;
+  if((VECINOS[origen] || []).some(v => (VECINOS[v] || []).includes(destino))) return 2;
+  return 3;
+}
+
+function centroMasCercano(dep, requiereOncologico, excluirLima){
+  let opciones = RED.slice();
+  if(requiereOncologico) opciones = opciones.filter(c => c.niv === "centro_oncologico_pediatrico");
+  else opciones = opciones.filter(c => !c.parcial || salto(dep, c.dep) === 0);
+  if(excluirLima){
+    const sinLima = opciones.filter(c => c.dep !== "Lima");
+    if(sinLima.length) opciones = sinLima;
+  }
+  return opciones.sort((a, b) => salto(dep, a.dep) - salto(dep, b.dep) || a.h - b.h);
+}
+
+function abrirTeleconsulta(id){
+  const p = PACIENTES.find(x => x.id === id);
+  const urgente = p.estado === "priorizable" || p.fiebre;
+  const tic = "TIC-" + Math.random().toString(36).slice(2, 10).toUpperCase();
+  abrirModal(`
+    <button class="cerrar" onclick="cerrarModal()">×</button>
+    <h2>${urgente ? "Teleconsulta prioritaria" : "Teleconsulta"}</h2>
+    <p class="desc">${esc(p.nombre)} · ${esc(p.prov)}, ${esc(p.dep)}</p>
+    <div class="franja ${urgente ? "alerta" : "info"}"><span class="e">${urgente ? "🚑" : "👩‍⚕️"}</span>
+      <span>${urgente
+        ? "Modalidad <b>tiempo real</b>. Compromiso de respuesta: 15 minutos. Se habilita el ingreso por emergencia en paralelo."
+        : "Modalidad <b>diferida</b> (store-and-forward). Compromiso de respuesta: 6 horas."}
+      Marco legal: Ley 30421 y DL 1490.</span></div>
+    <div class="campos">
+      <div><label>Solicitud</label><input value="${tic}" readonly></div>
+      <div><label>Estado del paciente</label><input value="${CONDUCTA[p.estado].t}" readonly></div>
+      <div><label>ANC estimado</label><input value="${p.anc}/µL (IC95 ${p.ic[0]}–${p.ic[1]})" readonly></div>
+      <div><label>Etapa</label><input value="${ETAPAS[p.etapa].n}" readonly></div>
+    </div>
+    <div style="margin-top:14px"><label>Pregunta concreta al especialista</label>
+      <textarea rows="3">${urgente
+        ? "Tamizaje compatible con neutropenia grave" + (p.fiebre ? " con fiebre de " + p.fiebre + " °C" : "") +
+          ". ¿Confirma inicio de antibiótico de amplio espectro y autoriza ingreso por emergencia, o indica manejo en el establecimiento de referencia más cercano?"
+        : "Tamizaje por debajo de la ventana terapéutica sin fiebre. ¿Ajusta la dosis de 6-MP y repetimos el tamizaje en 48 h, o indica hemograma confirmatorio?"}</textarea></div>
+    <div class="nota">La responsabilidad clínica del caso permanece en el INSN San Borja.
+      El paquete viaja con el tamizaje, la trayectoria de las últimas semanas, la etapa y
+      la adherencia a las alertas. Una teleconsulta sin dato objetivo es una conversación
+      a ciegas; con la trayectoria, es una decisión.</div>
+    <div class="botonera">
+      <button class="btn menta" onclick="cerrarModal()">Enviar y notificar al michi</button>
+      ${p.noLima ? `<button class="btn" onclick="abrirReferencia('${p.id}')">Además, generar referencia local</button>` : ""}
+      <button class="btn fantasma" onclick="abrirPaciente(PACIENTES.find(x=>x.id==='${p.id}'))">Volver</button>
+    </div>`);
+}
+
+function abrirReferencia(id){
+  const p = PACIENTES.find(x => x.id === id);
+  const caps = capacidadesPara(p.estado, p.fiebre);
+  const orden = centroMasCercano(p.dep, false, p.noLima);
+  const destino = orden[0];
+  const evitadas = p.horas * 2;
+  const oncologico = destino.niv === "centro_oncologico_pediatrico";
+  abrirModal(`
+    <button class="cerrar" onclick="cerrarModal()">×</button>
+    <h2>Referencia generada</h2>
+    <p class="desc">${esc(p.nombre)} · la familia declaró que no puede viajar a Lima${
+      p.impedimento ? ": " + esc(p.impedimento).toLowerCase() : ""}.</p>
+    <div class="franja ok"><span class="e">🏥</span>
+      <span><b>${esc(destino.n)}</b> — ${esc(destino.ciu)}, ${esc(destino.dep)}.
+      Establecimiento capaz más cercano al domicilio declarado.</span></div>
+    <div class="campos">
+      <div><label>Motivo</label><input value="${caps.join(", ")}" readonly></div>
+      <div><label>Horas de viaje evitadas</label><input value="${evitadas} h ida y vuelta" readonly></div>
+      <div><label>Contrarreferencia</label><input value="Obligatoria al INSN San Borja" readonly></div>
+      <div><label>Alternativas</label><input value="${orden.slice(1,3).map(c=>c.ciu).join(" · ")}" readonly></div>
+    </div>
+    ${!oncologico ? `<div class="franja ambar"><span class="e">⚠️</span>
+      <span>El destino resuelve la urgencia (hemograma, hemocultivo, antibiótico, transfusión,
+      hospitalización) pero <b>no sustituye al centro oncológico</b>: no dispone de quimioterapia
+      pediátrica ni hematología pediátrica. El hematólogo del INSN mantiene la conducción del
+      caso por teleconsulta.</span></div>` : ""}
+    <div class="nota">Esto es lo que cambia la ecuación del abandono. La respuesta por defecto
+      hoy es «venga a Lima»: para esta familia son <b>${evitadas} horas</b> de viaje y varios días
+      de sueldo. Repetido cuarenta y cinco veces a lo largo del mantenimiento, deja de ser una
+      molestia y se convierte en la causa del abandono.</div>
+    <div class="botonera">
+      <button class="btn menta" onclick="cerrarModal()">Emitir referencia</button>
+      <button class="btn fantasma" onclick="abrirPaciente(PACIENTES.find(x=>x.id==='${p.id}'))">Volver</button>
+    </div>`);
+}
+
+function mensajeHL7(p){
+  const ts = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+  const est = {estable:"N", grave:"L", priorizable:"LL"}[p.estado];
+  return [
+`MSH|^~\\&|MICHICHECK|INSNSB^00006213^RENIPRESS|GALENUS|INSNSB|${ts}||ORU^R01^ORU_R01|MCK${Math.floor(Math.random()*1e6)}|P|2.5.1|||AL|NE|PER|UNICODE UTF-8`,
+`PID|1||${p.hc}^^^INSNSB^MR||${p.nombre.toUpperCase().replace(/ /g,"^")}||${new Date(Date.now()-p.edad*3.15576e10).toISOString().slice(0,10).replace(/-/g,"")}|${p.sexo}|||${p.prov.toUpperCase()}^^${p.dep.toUpperCase()}^^^PER`,
+`PV1|1|O|MICHI^DOMICILIO^${p.michi}||||||||||||||||${p.hc}`,
+`OBR|1||${p.michi}-${ts}|MCK-TAMIZAJE^Tamizaje optico de neutropenia^L|${p.estado==="priorizable"?"S":"R"}|${ts}|${ts}|||||||||||||||${ts}|||F`,
+`OBX|1|NM|26499-4^Neutrophils^LN||${p.anc}|10*3/uL^^UCUM|500-1500|${est}|||P|||${ts}|||MICHICHECK-OPTICO`,
+`OBX|2|NR|MCK-IC95^Intervalo de confianza 95%^L||${p.ic[0]}-${p.ic[1]}|10*3/uL^^UCUM||||||P|||${ts}`,
+`OBX|3|ST|MCK-ETAPA^Etapa del tratamiento^L||${ETAPAS[p.etapa].n}|||||||P|||${ts}`,
+`OBX|4|ST|MCK-ESTADO^Estado del paciente^L||${CONDUCTA[p.estado].t.toUpperCase()}|||||||P|||${ts}`,
+`OBX|5|ST|MCK-ENLACE^Estado del dispositivo^L||${p.enlace.toUpperCase()} bateria ${p.bateria}%|||||||P|||${ts}`,
+`NTE|1||RESULTADO PRELIMINAR. Tamizaje optico no invasivo por capilaroscopia.`,
+`NTE|2||NO es un hemograma: no mide plaquetas ni formula diferencial.`,
+`NTE|3||Orienta y prioriza. No descarta. La conducta la fija el clinico.`
+  ].join("\n");
+}
+
+function mensajeFHIR(p){
+  return JSON.stringify({
+    resourceType: "Bundle", type: "transaction",
+    meta: {profile: ["http://hl7.org/fhir/pe/core/StructureDefinition/BundlePE"]},
+    entry: [
+      {resource: {resourceType: "Patient",
+        meta: {profile: ["http://hl7.org/fhir/pe/core/StructureDefinition/PacientePE"]},
+        identifier: [{system: "urn:oid:2.16.858.2.10000675.1", value: p.hc}],
+        name: [{text: p.nombre}],
+        address: [{state: p.dep, district: p.prov, country: "PE"}]}},
+      {resource: {resourceType: "Device",
+        identifier: [{system: "https://michicheck.pe/serie", value: p.michi}],
+        status: p.enlace === "sin_contacto" ? "inactive" : "active",
+        deviceName: [{name: "MichiCheck", type: "manufacturer-name"}],
+        property: [{type: {text: "bateria"}, valueQuantity: {value: p.bateria, unit: "%"}}]}},
+      {resource: {resourceType: "Observation",
+        status: "preliminary",
+        category: [{coding: [{code: "laboratory"}]}],
+        code: {coding: [{system: "http://loinc.org", code: "26499-4",
+          display: "Neutrophils [#/volume] in Blood"}]},
+        valueQuantity: {value: p.anc, unit: "10*3/uL", system: "http://unitsofmeasure.org"},
+        interpretation: [{coding: [{code: p.anc < 500 ? "LL" : p.anc > 1500 ? "H" : "N"}]}],
+        referenceRange: [{low: {value: 500}, high: {value: 1500},
+          text: "ventana terapéutica del mantenimiento"}],
+        method: {text: "Capilaroscopia óptica no invasiva 530 nm. Tamizaje, no hemograma."},
+        note: [{text: "Resultado preliminar. No mide plaquetas ni fórmula diferencial."}]}},
+      {resource: {resourceType: "Flag",
+        status: "active",
+        category: [{text: "estado-michicheck"}],
+        code: {text: CONDUCTA[p.estado].t},
+        period: {start: new Date().toISOString()}}}
+    ]
+  }, null, 2);
+}
+
+function pintarGalenus(){
+  $("#selMensaje").innerHTML = PACIENTES.map(p =>
+    `<option value="${p.id}">${esc(p.nombre)} — ${CONDUCTA[p.estado].t}</option>`).join("");
+  refrescarMensaje();
+}
+function refrescarMensaje(){
+  const p = PACIENTES.find(x => x.id === $("#selMensaje").value) || PACIENTES[0];
+  $("#salidaMensaje").textContent = $("#selFormato").value === "hl7"
+    ? mensajeHL7(p) : mensajeFHIR(p);
+}
+function verMensaje(id){
+  cerrarModal(); irA("galenus");
+  $("#selMensaje").value = id; refrescarMensaje();
+}
+
+function pintarRed(){
+  const onco = RED.filter(c => c.niv === "centro_oncologico_pediatrico").length;
+  const cont = RED.length - onco;
+  const conCentro = new Set(RED.map(c => c.dep)).size;
+  const conOnco = new Set(RED.filter(c => c.niv === "centro_oncologico_pediatrico").map(c => c.dep)).size;
+  $("#kpisRed").innerHTML = `
+    <div class="kpi cian"><div class="k">Establecimientos</div><div class="v">${RED.length}</div>
+      <div class="d">en ${conCentro} departamentos</div></div>
+    <div class="kpi verde"><div class="k">Oncológicos pediátricos</div><div class="v">${onco}</div>
+      <div class="d">solo en ${conOnco} departamentos</div></div>
+    <div class="kpi ambar"><div class="k">De continuidad</div><div class="v">${cont}</div>
+      <div class="d">resuelven la urgencia, no la enfermedad</div></div>
+    <div class="kpi coral"><div class="k">Departamentos sin oncológico</div>
+      <div class="v">${Object.keys(VECINOS).length - conOnco}</div>
+      <div class="d">dependen de la teleconsulta</div></div>`;
+
+  const q = ($("#buscaRed").value || "").toLowerCase();
+  $("#cuerpoRed").innerHTML = RED
+    .filter(c => filtroRed === "todos" || c.niv === filtroRed)
+    .filter(c => !q || (c.n + c.dep + c.ciu).toLowerCase().includes(q))
+    .sort((a, b) => a.dep.localeCompare(b.dep) || a.n.localeCompare(b.n))
+    .map(c => `<tr>
+      <td><b>${esc(c.n)}</b>${c.tras ? ' <span class="insignia gris">trasplante</span>' : ""}</td>
+      <td>${esc(c.ciu)}</td><td>${esc(c.dep)}</td>
+      <td><span class="insignia ${c.niv === "centro_oncologico_pediatrico" ? "estable" : "gris"}">${
+        c.niv === "centro_oncologico_pediatrico" ? "Oncológico" : "Continuidad"}</span></td>
+      <td style="font-size:12px;color:var(--tenue)">${c.niv === "centro_oncologico_pediatrico"
+        ? "Diagnóstico, quimioterapia, hematología pediátrica"
+        : c.parcial ? "Hemograma, antibiótico, hospitalización"
+        : "Hemograma, hemocultivo, antibiótico, transfusión, hospitalización"}</td></tr>`).join("");
+}
+
+function abrirModal(html){ $("#modal").innerHTML = html; $("#velo").classList.add("on"); }
+function cerrarModal(){ $("#velo").classList.remove("on"); }
+$("#velo").onclick = e => { if(e.target === $("#velo")) cerrarModal(); };
+
+function irA(v){
+  $$(".vista").forEach(s => s.classList.toggle("on", s.dataset.vista === v));
+  $$(".pestanas button").forEach(b => b.classList.toggle("on", b.dataset.ir === v));
+  if(v === "alertas") pintarAlertas();
+  if(v === "red") pintarRed();
+  if(v === "galenus") pintarGalenus();
+}
+$$(".pestanas button").forEach(b => b.onclick = () => irA(b.dataset.ir));
+$$("[data-filtro]").forEach(b => b.onclick = () => {
+  filtro = b.dataset.filtro;
+  $$("[data-filtro]").forEach(x => x.classList.toggle("on", x === b));
+  pintarPacientes();
+});
+$$("[data-red]").forEach(b => b.onclick = () => {
+  filtroRed = b.dataset.red;
+  $$("[data-red]").forEach(x => x.classList.toggle("on", x === b));
+  pintarRed();
+});
+$("#busca").oninput = pintarPacientes;
+$("#buscaRed").oninput = pintarRed;
+$("#selMensaje").onchange = refrescarMensaje;
+$("#selFormato").onchange = refrescarMensaje;
+
+$("#fDepto").innerHTML = DEPARTAMENTOS.map(d =>
+  `<option ${d === "Amazonas" ? "selected" : ""}>${d}</option>`).join("");
+$("#fNoLima").onchange = e =>
+  $("#cajaImpedimento").style.display = e.target.checked ? "block" : "none";
+
+$("#btnConsentimiento").onclick = () => {
+  const n = $("#fNombre").value || "el niño";
+  const m = $("#fMedico").value || "el médico asignado";
+  const h = $("#fSalida").value || "18:00";
+  abrirModal(`
+    <button class="cerrar" onclick="cerrarModal()">×</button>
+    <h2>Lo que se le lee a la familia</h2>
+    <p class="desc">En voz alta, antes de entregar el juguete. No es letra chica: si la familia
+      no entiende que el michi transmite información al hospital, el sistema no tiene permiso
+      para funcionar.</p>
+    <ul style="font-size:13.5px;line-height:1.75;padding-left:20px;color:var(--texto)">
+      <li>El michi le va a recordar a ${esc(n)} sus controles y le va a pedir que ponga el
+        dedito en su nariz. Eso es un <b>tamizaje</b>, no un análisis de sangre: orienta,
+        no reemplaza el hemograma.</li>
+      <li>Lo que el michi mide llega al INSN San Borja, al equipo de ${esc(m)}.</li>
+      <li>Si el michi deja de comunicarse por más de tres días, el hospital los va a llamar.
+        No es vigilancia: es la forma de darnos cuenta a tiempo de que algo pasó.</li>
+      <li>Las alertas van a sonar después de las <b>${h}</b>, cuando ya estén en casa.</li>
+      <li>Pueden devolver el michi cuando quieran y seguir con sus controles igual.
+        <b>No condiciona ninguna atención.</b></li>
+    </ul>
+    <div class="botonera"><button class="btn fantasma" onclick="cerrarModal()">Cerrar</button></div>`);
+};
+
+$("#btnEnrolar").onclick = () => {
+  const hc = $("#fHC").value.trim() || "SIN-HC";
+  const nac = $("#fNac").value;
+  const edad = nac ? (Date.now() - new Date(nac).getTime()) / 3.15576e10 : 6;
+  const etapa = $("#fEtapa").value;
+  const dep = $("#fDepto").value;
+  const noLima = $("#fNoLima").checked;
+  const serieMichi = "MC-" + Array.from({length: 8},
+    () => "0123456789ABCDEF"[(Math.random()*16)|0]).join("");
+  const codigo = Array.from({length: 3},
+    () => Array.from({length: 4}, () => "0123456789ABCDEF"[(Math.random()*16)|0]).join("")).join("-");
+
+  const nuevo = {
+    id: "P" + (PACIENTES.length + 1), nombre: $("#fNombre").value.trim() || "Sin nombre",
+    hc, edad, sexo: "F", dep, prov: $("#fProv").value.trim() || dep,
+    horas: parseFloat($("#fHoras").value) || 0, noLima,
+    impedimento: noLima ? ($("#fImpedimento").value.trim() || "No declarado") : "",
+    etapa, estado: "estable", enlace: "en_linea", bateria: 100, michi: serieMichi,
+    apoderado: `${$("#fApo").value.trim()} (${$("#fParentesco").value})`,
+    cel: $("#fCel").value.trim(), salida: $("#fSinHorario").checked ? "20:00" : $("#fSalida").value,
+    anc: 1200, ic: [504, 2880], traj: [1200], ultimo: "recién vinculado",
+    adherencia: 1, postergaciones: 0, alertasEnviadas: 0, alertasAtendidas: 0
+  };
+  PACIENTES.push(nuevo);
+
+  const e = ETAPAS[etapa];
+  const hoy = new Date();
+  const proximos = [1, 2, 3].map(k => {
+    const d = new Date(hoy); d.setDate(d.getDate() + e.ctrl * k);
+    return d.toLocaleDateString("es-PE", {day: "2-digit", month: "short", year: "numeric"});
+  });
+  const conMargen = hhmm => {
+    const [h, m] = hhmm.split(":").map(Number);
+    const t = new Date(2000, 0, 1, h, m + 30);
+    return `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+  };
+  const ventana = $("#fSinHorario").checked ? "19:00 – 21:00"
+    : `${conMargen($("#fSalida").value || "18:00")} – 21:00`;
+
+  abrirModal(`
+    <button class="cerrar" onclick="cerrarModal()">×</button>
+    <h2>Michi vinculado</h2>
+    <p class="desc">Entrégueselo al niño y pídale al apoderado que abra la app y escriba
+      este código. Es el único paso que hace la familia.</p>
+    <div class="codigo">${codigo}</div>
+    <div class="campos">
+      <div><label>Serie del dispositivo</label><input value="${serieMichi}" readonly></div>
+      <div><label>Etapa</label><input value="${e.n} · riesgo de abandono ${e.riesgo}" readonly></div>
+      <div><label>Tamizaje en casa cada</label><input value="${e.tam} días" readonly></div>
+      <div><label>Control presencial cada</label><input value="${e.ctrl} días" readonly></div>
+      <div><label>Ventana de alertas</label><input value="${ventana}" readonly></div>
+      <div><label>Canal de respaldo</label><input value="${$("#fCanal").value} + SMS + llamada" readonly></div>
+    </div>
+    <h3 style="margin:18px 0 8px;font-size:12px;letter-spacing:1.3px;text-transform:uppercase;color:var(--lila)">
+      Próximos controles programados</h3>
+    <div class="cronologia">${proximos.map((f, i) => `<div class="hito">
+      <div class="cuando">${f}</div><b>Control ${i + 1}</b>
+      <span>El michi avisa 3 días antes, 1 día antes y esa misma mañana</span></div>`).join("")}</div>
+    ${noLima ? `<div class="franja ambar"><span class="e">🚌</span>
+      <span>La familia declaró que no puede viajar a Lima. Si el tamizaje escala,
+      la teleconsulta va a generar referencia a
+      <b>${esc(centroMasCercano(dep, false, true)[0].n)}</b>
+      (${esc(centroMasCercano(dep, false, true)[0].ciu)}) en lugar de citar en el INSN.</span></div>` : ""}
+    <div class="nota">Las alertas se programan <b>después del horario laboral</b> del apoderado.
+      Un recordatorio que suena mientras el padre está trabajando no lo escucha nadie, y se
+      registra como «no contactado». El michi maúlla cuando hay alguien en casa.</div>
+    <div class="botonera">
+      <button class="btn menta" onclick="cerrarModal();irA('tablero');pintarKpis();pintarPacientes()">
+        Ver en el tablero</button>
+    </div>`);
+};
+
+window.abrirPaciente = abrirPaciente;
+window.abrirTeleconsulta = abrirTeleconsulta;
+window.abrirReferencia = abrirReferencia;
+window.verMensaje = verMensaje;
+window.cerrarModal = cerrarModal;
+window.PACIENTES = PACIENTES;
+window.irA = irA;
+window.pintarKpis = pintarKpis;
+window.pintarPacientes = pintarPacientes;
+
+let iconoNotificacion = null;
+function iconoDelSistema(){
+  if(iconoNotificacion) return iconoNotificacion;
+  const c = document.createElement("canvas");
+  c.width = c.height = 192;
+  const g = c.getContext("2d");
+  g.fillStyle = "#130826"; g.fillRect(0, 0, 192, 192);
+  g.beginPath(); g.moveTo(52, 62); g.lineTo(46, 26); g.lineTo(82, 46); g.closePath();
+  g.fillStyle = "#A79FC0"; g.fill();
+  g.beginPath(); g.moveTo(140, 62); g.lineTo(146, 26); g.lineTo(110, 46); g.closePath(); g.fill();
+  g.beginPath(); g.ellipse(96, 102, 58, 50, 0, 0, 7); g.fillStyle = "#DCD6E8"; g.fill();
+  g.fillStyle = "#1B1030"; g.beginPath(); g.roundRect(58, 84, 76, 34, 17); g.fill();
+  g.fillStyle = "#22D3EE";
+  g.beginPath(); g.ellipse(78, 101, 11, 12, 0, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(114, 101, 11, 12, 0, 0, 7); g.fill();
+  g.fillStyle = "#A855F7";
+  g.beginPath(); g.moveTo(88, 126); g.lineTo(104, 126); g.lineTo(96, 138); g.closePath(); g.fill();
+  iconoNotificacion = c.toDataURL("image/png");
+  return iconoNotificacion;
+}
+
+function pedirPermisos(){
+  if(!("Notification" in window)) return;
+  if(Notification.permission === "default") Notification.requestPermission().catch(() => {});
+}
+
+function avisarEnSistema(titulo, cuerpo){
+  if(!("Notification" in window) || Notification.permission !== "granted") return false;
+  try{
+    const n = new Notification(titulo, {
+      body: cuerpo, icon: iconoDelSistema(), badge: iconoDelSistema(),
+      tag: "insnsb", renotify: true, requireInteraction: false});
+    n.onclick = () => { window.focus(); n.close(); };
+    setTimeout(() => n.close(), 9000);
+    return true;
+  }catch(e){ return false; }
+}
+
+const PASOS = [
+  {t: "Esta es la consola del INSN San Borja. Un tablero por paciente, ordenado por <b>lo que no puede esperar</b>, no por fecha.",
+   ms: 4600, ir: "tablero", accion(){ foco("#kpis"); }},
+
+  {t: "Cinco indicadores. Fíjense en el cuarto: <b>«michis sin contacto»</b>. Un juguete que dejó de comunicarse está en la misma línea que un paciente grave, y en un momento veremos por qué.",
+   ms: 6200, accion(){ foco("#kpis"); }},
+
+  {t: "Cada tarjeta trae el estado clínico, el <b>estado del juguete</b> y la trayectoria del recuento. La banda verde es la ventana terapéutica del mantenimiento: entre 500 y 1500.",
+   ms: 6000, accion(){ foco("#rejillaPacientes .paciente"); }},
+
+  {t: "Mateo Ríos, 9 años, Iquitos. <b>Priorizable</b>: tamizaje bajo y fiebre de 38.6 grados.",
+   ms: 4200, accion(){ quitarFoco(); abrirPaciente(PACIENTES.find(p => p.id === "P3")); }},
+
+  {t: "<b>La fiebre escala y nunca rebaja.</b> Un tamizaje óptico dudoso no puede reducir la conducta que la clínica ya indica; sólo puede aumentarla. Esa regla hace imposible por diseño que el sistema tranquilice a nadie.",
+   ms: 7000, accion(){ setTimeout(() => foco(".franja.alerta"), 300); }},
+
+  {t: "Un hemograma mensual da un punto al mes. <b>El michi da una línea.</b> En mantenimiento lo que importa no es el valor de hoy sino hacia dónde va: eso es lo que permite ajustar la dosis de 6-MP sin que el niño viaje.",
+   ms: 7000, accion(){ foco("#cajaGrafico"); }},
+
+  {t: "Se abre la <b>teleconsulta prioritaria</b>: 15 minutos de compromiso, modalidad tiempo real y, en paralelo, ingreso por emergencia habilitado. Marco legal: Ley 30421 y DL 1490.",
+   ms: 6500, accion(){ quitarFoco(); abrirTeleconsulta("P3"); }},
+
+  {t: "Ahora Joaquín Ccahuana, en Quispicanchi, Cusco. Su tamizaje dice <b>estable</b>. Pero <b>su michi lleva cinco días callado</b>.",
+   ms: 5200, accion(){ cerrarModal(); abrirPaciente(PACIENTES.find(p => p.id === "P5")); }},
+
+  {t: "Esta es la señal que ningún otro sistema tiene. El rescate actual se entera cuando el niño <b>falta a una cita</b>, y en mantenimiento las citas son mensuales. Aquí el sistema se entera cuando <b>el juguete se calló</b>: tres semanas antes.",
+   ms: 8000, accion(){ setTimeout(() => foco(".franja.alerta"), 300);
+     avisarEnSistema("MichiCheck · alerta de seguimiento",
+       "Joaquín Ccahuana (Quispicanchi, Cusco): el michi lleva 5 días sin comunicarse. Adherencia 55 %, 4 postergaciones."); }},
+
+  {t: "La familia declaró que <b>no puede viajar a Lima</b>. El sistema no responde «entonces no hay atención»: emite la referencia al establecimiento capaz más cercano y calcula las horas de viaje que evita.",
+   ms: 7000, accion(){ quitarFoco(); abrirReferencia("P5"); }},
+
+  {t: "La cola de atención junta las dos cosas: lo clínico y lo del dispositivo. <b>Un michi mudo entra como caso grave</b>, y su conducta no es una teleconsulta: es una búsqueda.",
+   ms: 6200, ir: "alertas", accion(){ cerrarModal(); setTimeout(() => foco("#cuerpoAlertas"), 300); }},
+
+  {t: "Todo empieza en el primer control. Dos minutos al final de la consulta, donde se capturan tres cosas que hoy nadie captura: <b>la hora a la que sale de trabajar el apoderado</b>, el canal que sí contesta, y si pueden viajar a Lima.",
+   ms: 7500, ir: "enrolar", accion(){ quitarFoco();
+     setTimeout(() => foco("#fSalida"), 400);
+     setTimeout(() => { $("#fNoLima").checked = true;
+       $("#cajaImpedimento").style.display = "block"; foco("#fNoLima"); }, 3200); }},
+
+  {t: "Se genera la ficha y se vincula el michi. Sale el <b>código que la familia escribe una sola vez</b>, la ventana de alertas —19:00 a 21:00, después del trabajo— y el calendario de controles de la etapa.",
+   ms: 7500, accion(){ quitarFoco(); $("#btnEnrolar").click(); }},
+
+  {t: "La red nacional cargada: <b>10 centros oncológicos pediátricos, en sólo 4 departamentos</b>. Veintiún departamentos no tienen ninguno y dependen de la teleconsulta con el INSN.",
+   ms: 7000, ir: "red", accion(){ cerrarModal(); setTimeout(() => foco("#kpisRed"), 300); }},
+
+  {t: "Y la salida al HIS del instituto: <b>HL7 v2 ORU^R01</b>, marcado como preliminar y con el método explícito, para que nadie confunda esto con un hemograma dentro de seis meses.",
+   ms: 6500, ir: "galenus", accion(){ quitarFoco(); setTimeout(() => foco("#salidaMensaje"), 400); }},
+
+  {t: "También sale como <b>FHIR R4 con perfiles nacionales PE Core</b>, con el estado del dispositivo incluido como recurso Device. No es un tablero aparte: entra al sistema que el instituto ya usa.",
+   ms: 6500, accion(){ $("#selFormato").value = "fhir"; refrescarMensaje(); }},
+
+  {t: "Eso es MichiCheck. <b>No mandamos otro recordatorio: mandamos un gato.</b>",
+   ms: 5000, ir: "tablero", accion(){ quitarFoco(); }}
+];
+
+let tourIndice = 0, tourReloj = null, tourPausado = false;
+
+function foco(selector){
+  const el = $(selector);
+  const caja = $("#foco");
+  if(!el){ caja.classList.remove("on"); return; }
+  const r = el.getBoundingClientRect();
+  caja.style.left = (r.left - 8) + "px";
+  caja.style.top = (r.top - 8) + "px";
+  caja.style.width = (r.width + 16) + "px";
+  caja.style.height = (r.height + 16) + "px";
+  caja.classList.add("on");
+}
+function quitarFoco(){ $("#foco").classList.remove("on"); }
+
+function ejecutarPaso(){
+  const paso = PASOS[tourIndice];
+  $("#tourPaso").textContent = `${tourIndice + 1} / ${PASOS.length}`;
+  $("#tourBarra").style.width = ((tourIndice + 1) / PASOS.length * 100) + "%";
+  $("#tourTexto").innerHTML = paso.t;
+  if(paso.ir) irA(paso.ir);
+  try { if(paso.accion) paso.accion(); } catch(e) {}
+  if(tourPausado) return;
+  clearTimeout(tourReloj);
+  tourReloj = setTimeout(() => {
+    if(tourIndice < PASOS.length - 1){ tourIndice++; ejecutarPaso(); }
+    else terminarTour();
+  }, paso.ms);
+}
+
+function iniciarTour(pedir){
+  if(pedir !== false) pedirPermisos();
+  tourPausado = false; tourIndice = 0;
+  $("#tour").classList.add("on");
+  document.body.classList.add("con-tour");
+  $("#btnTour").style.display = "none";
+  $("#tourPausa").textContent = "⏸ Pausa";
+  document.body.style.paddingBottom = "150px";
+  cerrarModal();
+  ejecutarPaso();
+}
+
+function terminarTour(){
+  clearTimeout(tourReloj);
+  quitarFoco(); cerrarModal();
+  $("#tour").classList.remove("on");
+  document.body.classList.remove("con-tour");
+  $("#btnTour").style.display = "";
+  document.body.style.paddingBottom = "";
+}
+
+$("#btnTour").onclick = () => iniciarTour(true);
+$("#tourSalir").onclick = terminarTour;
+$("#tourPausa").onclick = () => {
+  tourPausado = !tourPausado;
+  $("#tourPausa").textContent = tourPausado ? "▶ Seguir" : "⏸ Pausa";
+  if(tourPausado) clearTimeout(tourReloj);
+  else ejecutarPaso();
+};
+$("#tourSiguiente").onclick = () => {
+  clearTimeout(tourReloj);
+  if(tourIndice < PASOS.length - 1){ tourIndice++; ejecutarPaso(); }
+  else terminarTour();
+};
+$("#tourAnterior").onclick = () => {
+  clearTimeout(tourReloj);
+  if(tourIndice > 0){ tourIndice--; ejecutarPaso(); }
+};
+
+window.INSN = {tour: iniciarTour, pararTour: terminarTour, avisar: avisarEnSistema};
+
+pintarKpis();
+pintarPacientes();
+window.addEventListener("resize", () => { if($("#rejillaPacientes").children.length) pintarPacientes(); });
+
+if(new URLSearchParams(location.search).has("demo")) setTimeout(() => iniciarTour(false), 800);
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0E0620">
+<meta name="description" content="MichiCheck — un juguete que acompaña al niño con leucemia y sostiene su tratamiento. Hackatón Niño San Borja 2026.">
+<title>MichiCheck</title>
+<style>
+:root{
+  --tinta:#0B0518; --panel:#1C0F35; --panel2:#251446; --borde:#3A2263;
+  --morado:#8B5CF6; --morado-vivo:#A855F7; --lila:#C4B5FD; --cian:#22D3EE;
+  --menta:#34D399; --coral:#FB7185; --texto:#F3EFFC; --tenue:#A594C8; --muy-tenue:#6F5F94;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100dvh;font-family:ui-sans-serif,"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  color:var(--texto);line-height:1.55;
+  background:
+    radial-gradient(90% 55% at 50% -10%, #3B1D6B 0%, transparent 60%),
+    radial-gradient(70% 45% at 105% 90%, #4C1D95 0%, transparent 60%),
+    var(--tinta);
+  display:flex;flex-direction:column;align-items:center;
+  padding:clamp(24px,6vw,72px) 20px 40px;
+}
+.estrellas{position:fixed;inset:0;pointer-events:none;opacity:.45}
+.estrellas i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;
+  animation:titila 3.4s ease-in-out infinite}
+@keyframes titila{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.6)}}
+
+main{position:relative;z-index:2;width:100%;max-width:900px}
+
+header{text-align:center;margin-bottom:clamp(28px,5vw,48px)}
+.gato{width:clamp(96px,20vw,132px);height:auto;overflow:visible;margin-bottom:14px}
+.gato .cuerpo-g{transform-origin:center 78%;animation:respira 3.6s ease-in-out infinite}
+@keyframes respira{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.parpado{transform-origin:center top;animation:parp 4.4s ease-in-out infinite}
+@keyframes parp{0%,92%,100%{transform:scaleY(0)}96%{transform:scaleY(1)}}
+h1{margin:0;font-size:clamp(30px,6vw,46px);letter-spacing:-1.2px;font-weight:900}
+.lema{margin:10px auto 0;max-width:560px;font-size:clamp(15px,2.4vw,18px);color:var(--lila)}
+.sello{display:inline-block;margin-top:16px;padding:6px 14px;border-radius:99px;
+  font-size:11px;letter-spacing:1.4px;text-transform:uppercase;font-weight:800;
+  background:rgba(168,85,247,.16);border:1px solid var(--borde);color:var(--lila)}
+
+.rejilla{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:16px;margin-bottom:22px}
+.tarjeta{
+  display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  background:linear-gradient(160deg,var(--panel),var(--panel2));
+  border:1px solid var(--borde);border-radius:24px;padding:24px;
+  transition:.2s;position:relative;overflow:hidden;
+}
+.tarjeta::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;
+  border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,.22),transparent 70%)}
+.tarjeta:hover{transform:translateY(-3px);border-color:var(--morado-vivo);
+  box-shadow:0 18px 44px rgba(0,0,0,.5)}
+.tarjeta .emo{font-size:38px;line-height:1;margin-bottom:12px}
+.tarjeta h2{margin:0 0 4px;font-size:19px;letter-spacing:-.3px}
+.tarjeta .quien{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;
+  color:var(--cian);font-weight:800;margin-bottom:10px}
+.tarjeta p{margin:0 0 18px;font-size:13.5px;color:var(--tenue);flex:1}
+.tarjeta .ir{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;
+  font-weight:800;color:var(--texto)}
+.tarjeta .ir span{transition:.2s}
+.tarjeta:hover .ir span{transform:translateX(4px)}
+
+.acciones{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:26px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  padding:12px 20px;border-radius:14px;font-size:13.5px;font-weight:800;
+  background:linear-gradient(145deg,var(--morado-vivo),#6D28D9);color:#fff;
+  box-shadow:0 10px 26px rgba(139,92,246,.36);transition:.18s;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn.fantasma{background:rgba(255,255,255,.06);border:1px solid var(--borde);
+  box-shadow:none;color:var(--tenue)}
+
+.nota{
+  font-size:12.5px;line-height:1.65;color:var(--tenue);
+  background:rgba(0,0,0,.28);border-left:3px solid var(--morado);
+  border-radius:0 14px 14px 0;padding:14px 16px;margin-bottom:22px;
+}
+.nota b{color:var(--texto)}
+
+.datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:26px}
+.dato{background:rgba(255,255,255,.04);border:1px solid var(--borde);
+  border-radius:16px;padding:14px;text-align:center}
+.dato .v{font-size:24px;font-weight:900;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.dato .k{font-size:10px;letter-spacing:1.1px;text-transform:uppercase;
+  color:var(--muy-tenue);font-weight:800;margin-top:3px}
+.dato.verde .v{color:var(--menta)}
+.dato.cian .v{color:var(--cian)}
+.dato.coral .v{color:var(--coral)}
+
+footer{text-align:center;font-size:11.5px;color:var(--muy-tenue);line-height:1.8;
+  border-top:1px solid var(--borde);padding-top:22px}
+footer a{color:var(--tenue)}
+</style>
+</head>
+<body>
+<div class="estrellas" id="estrellas"></div>
+
+<main>
+  <header>
+    <svg class="gato" viewBox="0 0 300 300" aria-label="Michi">
+      <defs>
+        <linearGradient id="pelo" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#DCD6E8"/><stop offset="1" stop-color="#A79FC0"/>
+        </linearGradient>
+        <linearGradient id="peloOsc" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#B6AECB"/><stop offset="1" stop-color="#8B82A6"/>
+        </linearGradient>
+        <linearGradient id="panelOjo" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1B1030"/><stop offset="1" stop-color="#0B0518"/>
+        </linearGradient>
+        <radialGradient id="nariz">
+          <stop offset="0" stop-color="#D8B4FE"/><stop offset="1" stop-color="#7C3AED"/>
+        </radialGradient>
+      </defs>
+      <g class="cuerpo-g">
+        <path d="M84 96 L74 44 L124 74 Z" fill="url(#peloOsc)"/>
+        <path d="M92 92 L86 60 L114 78 Z" fill="#FF9EC7" opacity=".85"/>
+        <path d="M216 96 L226 44 L176 74 Z" fill="url(#peloOsc)"/>
+        <path d="M208 92 L214 60 L186 78 Z" fill="#FF9EC7" opacity=".85"/>
+        <ellipse cx="150" cy="128" rx="80" ry="70" fill="url(#pelo)"/>
+        <rect x="88" y="104" width="124" height="52" rx="26" fill="url(#panelOjo)"/>
+        <rect x="88" y="104" width="124" height="52" rx="26" fill="none" stroke="#3C2A5E" stroke-width="2"/>
+        <ellipse cx="119" cy="130" rx="17" ry="19" fill="#22D3EE"/>
+        <ellipse cx="119" cy="130" rx="7" ry="15" fill="#0B0518"/>
+        <circle cx="113" cy="122" r="5" fill="#fff" opacity=".92"/>
+        <ellipse cx="181" cy="130" rx="17" ry="19" fill="#22D3EE"/>
+        <ellipse cx="181" cy="130" rx="7" ry="15" fill="#0B0518"/>
+        <circle cx="175" cy="122" r="5" fill="#fff" opacity=".92"/>
+        <g class="parpado">
+          <rect x="98" y="106" width="42" height="46" rx="21" fill="#0B0518"/>
+          <rect x="160" y="106" width="42" height="46" rx="21" fill="#0B0518"/>
+        </g>
+        <path d="M138 162 L162 162 L150 178 Z" fill="url(#nariz)"/>
+        <path d="M150 178 L150 186" stroke="#8B82A6" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M150 186 Q138 196 130 186" stroke="#8B82A6" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M150 186 Q162 196 170 186" stroke="#8B82A6" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <g stroke="#EFEAF8" stroke-width="2.6" stroke-linecap="round" opacity=".65">
+          <path d="M78 160 L38 152"/><path d="M78 170 L40 172"/>
+          <path d="M222 160 L262 152"/><path d="M222 170 L260 172"/>
+        </g>
+      </g>
+    </svg>
+    <h1>MichiCheck</h1>
+    <p class="lema">Un juguete que acompaña al niño con leucemia
+      y sostiene su tratamiento.</p>
+    <span class="sello">Hackatón Niño San Borja 2026 · Desafío 3</span>
+  </header>
+
+  <div class="rejilla">
+    <a class="tarjeta" href="/michi/">
+      <div class="emo">🐱</div>
+      <div class="quien">Para el niño y su familia</div>
+      <h2>Mi michi</h2>
+      <p>El gato digital. Le recuerda los controles con un maullido, le enseña
+        a la familia lo que nadie le explicó, y le pide el dedito para el
+        tamizaje.</p>
+      <span class="ir">Abrir la app <span>→</span></span>
+    </a>
+
+    <a class="tarjeta" href="/insn/">
+      <div class="emo">🏥</div>
+      <div class="quien">Para el equipo tratante</div>
+      <h2>Consola clínica</h2>
+      <p>Los tres estados del paciente, el estado del juguete, la teleconsulta,
+        la red nacional de referencia y la salida a Galenus en HL7 y FHIR.</p>
+      <span class="ir">Abrir la consola <span>→</span></span>
+    </a>
+  </div>
+
+  <div class="acciones">
+    <a class="btn" href="/michi/?demo=1">▶ Ver la demo de la app</a>
+    <a class="btn fantasma" href="/insn/?demo=1">▶ Ver la demo de la consola</a>
+  </div>
+
+  <div class="nota">
+    <b>Ambas se reproducen solas.</b> El recorrido guiado se pausa, retrocede y
+    avanza. <b>Sube el volumen</b>: los maullidos, el ronroneo y la campanita se
+    sintetizan dentro de la propia página, sin archivos ni conexión. En la app
+    del niño, acepta el permiso de notificaciones para ver las alertas push
+    reales del sistema.
+  </div>
+
+  <div class="datos">
+    <div class="dato cian"><div class="v">3</div><div class="k">Estados</div></div>
+    <div class="dato verde"><div class="v">30</div><div class="k">Establecimientos</div></div>
+    <div class="dato coral"><div class="v">21</div><div class="k">Deptos sin oncológico</div></div>
+    <div class="dato"><div class="v">72 h</div><div class="k">Silencio = alerta</div></div>
+  </div>
+
+  <footer>
+    Tamizaje óptico no invasivo. <b>Orienta y prioriza; no diagnostica ni
+    reemplaza el hemograma.</b><br>
+    Instituto Nacional de Salud del Niño San Borja · Apache-2.0
+  </footer>
+</main>
+
+<script>
+const capa = document.getElementById("estrellas");
+for (let i = 0; i < 42; i++) {
+  const e = document.createElement("i");
+  e.style.left = Math.random() * 100 + "%";
+  e.style.top = Math.random() * 100 + "%";
+  e.style.animationDelay = (Math.random() * 3.4) + "s";
+  capa.appendChild(e);
+}
+</script>
+</body>
+</html>

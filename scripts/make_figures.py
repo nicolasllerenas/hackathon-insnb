@@ -17,13 +17,13 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from yawar.optics import (  # noqa: E402
+from michicheck.optics import (
     anc_from_wbc,
     event_threshold_for_anc,
     neutrophil_fraction_for_age,
     wbc_from_event_rate,
 )
-from yawar.synth import (  # noqa: E402
+from michicheck.synth import (
     CapillaryState,
     OpticalSetup,
     PatientState,
@@ -92,7 +92,7 @@ def figura_sano_vs_neutropenico() -> None:
     justamente el aporte algoritmico. La figura cuenta esa historia: dato crudo
     ambiguo a la izquierda, discriminacion limpia a la derecha.
     """
-    from yawar.vision import (
+    from michicheck.vision import (
         detect_events,
         estimate_velocity,
         extract_kymograph,
@@ -133,8 +133,6 @@ def figura_sano_vs_neutropenico() -> None:
 
         p = det.projection
         v = p.valid & np.isfinite(p.profile)
-        # La coordenada material crece hacia atras (la sangre que ya paso);
-        # se invierte para que el eje se lea como "columna recorrida".
         xi_mm = (p.xi_um[v] - p.xi_um[v].min()) / 1000.0
         axes[fila, 2].plot(xi_mm, p.profile[v], lw=.7, color="#333")
         if det.positions_um.size:
@@ -194,7 +192,7 @@ def figura_metricas() -> None:
         return
 
     from sklearn.metrics import roc_curve
-    from yawar.model import cross_validate, label_severe, physics_only_auc
+    from michicheck.model import cross_validate, label_severe, physics_only_auc
 
     d = np.load(ruta, allow_pickle=True)
     X, anc = d["features"], d["anc_true"]
@@ -235,6 +233,154 @@ def figura_metricas() -> None:
           f"· VPN {met.npv:.3f}")
 
 
+def figura_ventana_terapeutica() -> None:
+    """El giro conceptual: en mantenimiento, un recuento alto es mala noticia."""
+    from michicheck.mantenimiento import (
+        VENTANA_MANTENIMIENTO, Medicion, analizar_trayectoria)
+    from datetime import date, timedelta
+
+    fig, ax = plt.subplots(1, 2, figsize=(13, 4.6))
+    bajo, alto = VENTANA_MANTENIMIENTO
+
+    ax[0].axhspan(0, bajo, color=ROJO, alpha=.13)
+    ax[0].axhspan(bajo, alto, color="#1b7f4b", alpha=.16)
+    ax[0].axhspan(alto, 3500, color="#b8860b", alpha=.13)
+    for y, txt, col in [(250, "TOXICIDAD\nsuspender dosis", ROJO),
+                        (1000, "VENTANA TERAPÉUTICA\nel tratamiento actúa", "#1b7f4b"),
+                        (2400, "POR ENCIMA\nel tratamiento NO actúa", "#8a6100")]:
+        ax[0].text(0.5, y, txt, ha="center", va="center", fontsize=11,
+                   fontweight="bold", color=col)
+    ax[0].set_xlim(0, 1); ax[0].set_ylim(0, 3500); ax[0].set_xticks([])
+    ax[0].set_ylabel("ANC (/µL)")
+    ax[0].set_title("En mantenimiento, el objetivo ES tener el recuento bajo",
+                    fontweight="bold", fontsize=12)
+
+    inicio = date(2026, 6, 1)
+    series = {
+        "adherente": ([1100, 900, 1200, 850, 1000, 1150], "#1b7f4b"),
+        "sospecha de no adherencia": ([1900, 2200, 2400, 2300, 2600, 2500], "#b8860b"),
+    }
+    for etiqueta, (valores, color) in series.items():
+        fechas = [inicio + timedelta(weeks=i) for i in range(len(valores))]
+        ax[1].plot(range(len(valores)), valores, "o-", lw=2.5, ms=8,
+                   color=color, label=etiqueta)
+        meds = [Medicion(f, v, v * .4, v * 2.5) for f, v in zip(fechas, valores)]
+        t = analizar_trayectoria(meds, hoy=fechas[-1])
+        if t.sospecha_no_adherencia:
+            ax[1].annotate("riesgo de recaída ×2.7",
+                           (len(valores) - 1, valores[-1]),
+                           xytext=(len(valores) - 3.2, 3100), fontsize=10,
+                           color=ROJO, fontweight="bold",
+                           arrowprops=dict(arrowstyle="->", color=ROJO, lw=1.5))
+
+    ax[1].axhspan(bajo, alto, color="#1b7f4b", alpha=.14)
+    ax[1].text(0.1, (bajo + alto) / 2, "ventana", fontsize=9,
+               color="#1b7f4b", fontweight="bold", va="center")
+    ax[1].set_xlabel("semanas de seguimiento"); ax[1].set_ylabel("ANC (/µL)")
+    ax[1].set_ylim(0, 3500)
+    ax[1].set_title("Una toma suelta dice poco; la serie dice mucho",
+                    fontweight="bold", fontsize=12)
+    ax[1].legend(fontsize=9, loc="lower right"); ax[1].grid(alpha=.25)
+
+    fig.suptitle("El 44% de los niños tiene adherencia <95% al 6-MP, y eso "
+                 "triplica el riesgo de recaída", fontsize=12.5, y=1.0)
+    fig.tight_layout()
+    fig.savefig(SALIDA / "06_ventana_terapeutica.png")
+    plt.close(fig)
+
+
+def figura_carga_de_viajes() -> None:
+    """La diapositiva 3 del pitch: el abandono, medido en viajes y en soles."""
+    from michicheck.adherencia import (
+        ContextoFamiliar, FaseTratamiento, calcular_carga)
+
+    ctx = ContextoFamiliar(horas_viaje_ida=9.0, costo_viaje_soles=180.0,
+                           zona_rural=True, ingreso_mensual_soles=1200.0,
+                           cuidador_unico=True, hermanos_menores=2)
+    carga = calcular_carga(ctx, FaseTratamiento.MANTENIMIENTO, 18)
+    total = int(round(carga.viajes_totales))
+    evitables = int(round(carga.viajes_evitables))
+
+    fig = plt.figure(figsize=(13, 5.2))
+    gs = fig.add_gridspec(2, 3, height_ratios=[1.55, .8], hspace=.05, wspace=.3)
+
+    ax = fig.add_subplot(gs[0, :])
+    cols, filas = 15, 3
+    for i in range(total):
+        c, f = i % cols, i // cols
+        evitable = i >= (total - evitables)
+        ax.add_patch(plt.Rectangle((c, filas - 1 - f), .86, .86,
+                                   facecolor="#22a06b" if evitable else "#c9c4d8",
+                                   edgecolor="white", linewidth=1.6))
+    ax.set_xlim(-.4, cols); ax.set_ylim(-1.15, filas + .75)
+    ax.axis("off"); ax.set_aspect("equal")
+    ax.text(cols / 2, filas + .18,
+            f"{total} viajes a Lima en 18 meses de mantenimiento",
+            fontsize=15.5, fontweight="bold", va="bottom", ha="center")
+    ax.annotate(f"{evitables} evitables con tamizaje local",
+                xy=(cols / 2, -.15), xytext=(cols / 2, -.85),
+                fontsize=13, fontweight="bold", color="#1b7f4b",
+                ha="center", va="center",
+                arrowprops=dict(arrowstyle="-", color="#1b7f4b", lw=1.6))
+
+    datos = [
+        (f"{carga.horas_totales:.0f} h", "de viaje", "#5b3fa8"),
+        (f"S/ {carga.costo_total_soles:,.0f}".replace(",", " "), "de gasto", "#5b3fa8"),
+        ("54 %", "del ingreso familiar", "#c1121f"),
+    ]
+    for i, (valor, etiqueta, color) in enumerate(datos):
+        a = fig.add_subplot(gs[1, i]); a.axis("off")
+        a.text(.5, .62, valor, fontsize=34, fontweight="bold",
+               color=color, ha="center", va="center")
+        a.text(.5, .18, etiqueta, fontsize=12.5, color="#5b6472",
+               ha="center", va="center")
+
+    fig.suptitle("El abandono no es una decisión: es una acumulación",
+                 fontsize=13.5, y=.99, color="#5b6472")
+    fig.savefig(SALIDA / "07_carga_de_viajes.png")
+    plt.close(fig)
+
+
+def figura_tres_senales() -> None:
+    """Diapositiva de reserva: qué sale del mismo vídeo de 60 segundos."""
+    fig, ax = plt.subplots(figsize=(11.5, 4.4))
+    ax.axis("off"); ax.set_xlim(0, 10); ax.set_ylim(0, 6)
+
+    ax.add_patch(plt.Rectangle((.3, 2.1), 2.5, 1.8, facecolor="#efeaff",
+                               edgecolor="#5b3fa8", linewidth=2.2,
+                               joinstyle="round"))
+    ax.text(1.55, 3.3, "un vídeo", fontsize=13, fontweight="bold",
+            ha="center", color="#5b3fa8")
+    ax.text(1.55, 2.7, "60 s · 5 capilares", fontsize=10.5,
+            ha="center", color="#5b6472")
+
+    senales = [
+        (4.6, "Recuento leucocitario", "¿puede esperar o es\nuna emergencia?",
+         "#1b7f4b", "validado en sintético"),
+        (3.0, "Ventana terapéutica", "¿está tomando el\ntratamiento?",
+         "#b8860b", "validado en sintético"),
+        (1.4, "Microcirculación", "¿se está poniendo\nséptico?",
+         "#c1121f", "sin normativa pediátrica"),
+    ]
+    for y, titulo, sub, color, estado in senales:
+        ax.annotate("", xy=(4.4, y + .45), xytext=(2.85, 3.0),
+                    arrowprops=dict(arrowstyle="-|>", color=color, lw=2.4,
+                                    connectionstyle="arc3,rad=.16"))
+        ax.add_patch(plt.Rectangle((4.5, y - .1), 5.2, 1.15, facecolor="white",
+                                   edgecolor=color, linewidth=2.2))
+        ax.text(4.8, y + .68, titulo, fontsize=12.5, fontweight="bold",
+                color=color, va="center")
+        ax.text(4.8, y + .18, sub.replace("\n", " "), fontsize=10.5,
+                color="#5b6472", va="center")
+        ax.text(9.5, y + .68, estado, fontsize=8.5, color="#8b8598",
+                ha="right", va="center", style="italic")
+
+    fig.suptitle("Tres señales clínicas del mismo vídeo, sin hardware adicional",
+                 fontsize=13, fontweight="bold", y=.97)
+    fig.savefig(SALIDA / "08_tres_senales.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     SALIDA.mkdir(parents=True, exist_ok=True)
     for nombre, fn in [
@@ -242,8 +388,13 @@ if __name__ == "__main__":
         ("sano vs neutropénico", figura_sano_vs_neutropenico),
         ("requisito de fps", figura_requisito_fps),
         ("métricas", figura_metricas),
+        ("ventana terapéutica", figura_ventana_terapeutica),
+        ("carga de viajes", figura_carga_de_viajes),
+        ("tres señales", figura_tres_senales),
     ]:
         print(f"generando: {nombre}")
         fn()
     for f in sorted(SALIDA.glob("*.png")):
         print(f"  {f.relative_to(SALIDA.parents[1])}  ({f.stat().st_size // 1024} KB)")
+
+

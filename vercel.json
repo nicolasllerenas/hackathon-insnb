@@ -1,0 +1,38 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": "apps",
+  "trailingSlash": true,
+  "headers": [
+    {
+      "source": "/michi/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/michi/" }
+      ]
+    },
+    {
+      "source": "/michi/manifest.webmanifest",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "geolocation=(), camera=(), microphone=(), interest-cohort=()" }
+      ]
+    }
+  ],
+  "redirects": [
+    { "source": "/familia{/}?", "destination": "/michi/", "permanent": false },
+    { "source": "/clinica{/}?", "destination": "/insn/", "permanent": false },
+    { "source": "/demo{/}?", "destination": "/michi/?demo=1", "permanent": false },
+    { "source": "/demo-insn{/}?", "destination": "/insn/?demo=1", "permanent": false }
+  ]
+}

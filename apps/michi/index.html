@@ -1,0 +1,1795 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#160A2A">
+<link rel="manifest" href="manifest.webmanifest">
+<title>MichiCheck</title>
+<style>
+:root{
+  --tinta:#0E0620;
+  --fondo:#160A2A;
+  --panel:#221041;
+  --panel-alto:#2E1657;
+  --borde:#43266F;
+  --morado:#8B5CF6;
+  --morado-vivo:#A855F7;
+  --lila:#C4B5FD;
+  --lila-suave:#E9E2FF;
+  --cian:#22D3EE;
+  --rosa:#FF6BB5;
+  --menta:#34D399;
+  --ambar:#FBBF24;
+  --coral:#FB7185;
+  --pelo:#C9C3D8;
+  --pelo-oscuro:#9A93AE;
+  --texto:#F5F1FF;
+  --texto-tenue:#B3A6D0;
+  --radio:22px;
+  --sombra:0 18px 40px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;font-family:"Nunito",ui-rounded,"Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--tinta);color:var(--texto);
+  overscroll-behavior:none;user-select:none;
+}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+
+#app{
+  position:relative;max-width:460px;margin:0 auto;min-height:100dvh;
+  background:
+    radial-gradient(120% 70% at 50% -10%, #3B1D6B 0%, transparent 60%),
+    radial-gradient(90% 50% at 110% 40%, #4C1D95 0%, transparent 55%),
+    linear-gradient(180deg,#1E0E3A 0%, var(--fondo) 45%, #0E0620 100%);
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 80px rgba(139,92,246,.18);
+}
+
+.estrellas{position:absolute;inset:0;pointer-events:none;opacity:.5}
+.estrellas i{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:titila 3s ease-in-out infinite}
+@keyframes titila{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.5)}}
+
+header{
+  position:relative;z-index:5;padding:14px 16px 8px;
+  display:flex;align-items:center;gap:10px;
+}
+.marca{display:flex;align-items:center;gap:8px;margin-right:auto}
+.marca .logo{
+  width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--morado-vivo),var(--cian));
+  box-shadow:0 6px 18px rgba(168,85,247,.45);font-size:19px;
+}
+.marca b{font-size:17px;letter-spacing:.2px;display:block;line-height:1}
+.marca small{font-size:10px;color:var(--texto-tenue);letter-spacing:1.4px;text-transform:uppercase}
+
+.chip{
+  display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;
+  background:rgba(255,255,255,.07);border:1px solid var(--borde);
+  font-weight:800;font-size:13px;white-space:nowrap;
+}
+.chip.moneda{color:var(--ambar)}
+.chip.racha{color:var(--coral)}
+.chip .n{font-variant-numeric:tabular-nums}
+
+.barras{position:relative;z-index:5;display:flex;gap:8px;padding:4px 16px 10px}
+.barra{flex:1}
+.barra .et{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.8px;
+  text-transform:uppercase;color:var(--texto-tenue);font-weight:800;margin-bottom:4px}
+.pista{height:9px;border-radius:99px;background:rgba(0,0,0,.38);overflow:hidden;
+  border:1px solid rgba(255,255,255,.06)}
+.relleno{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.2,.9,.3,1)}
+.relleno.energia{background:linear-gradient(90deg,#FBBF24,#F59E0B)}
+.relleno.animo{background:linear-gradient(90deg,#FF6BB5,#F472B6)}
+.relleno.salud{background:linear-gradient(90deg,#34D399,#22D3EE)}
+
+main{position:relative;z-index:4;flex:1;display:flex;flex-direction:column;min-height:0}
+.vista{display:none;flex:1;flex-direction:column;min-height:0;animation:entra .28s ease}
+.vista.on{display:flex}
+@keyframes entra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.escena{flex:1;position:relative;display:grid;place-items:center;min-height:280px;padding:8px 0}
+.suelo{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,110px);
+  width:58%;height:30px;border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(168,85,247,.4), transparent 70%);
+  filter:blur(4px);
+}
+#gato{width:min(92vw,400px);max-height:100%;height:auto;overflow:visible;
+  cursor:pointer;touch-action:manipulation}
+#gato .cuerpo-g{transform-origin:center 78%;animation:respira 3.4s ease-in-out infinite}
+@keyframes respira{0%,100%{transform:scale(1)}50%{transform:scale(1.022,1.03)}}
+#gato.saltando .cuerpo-g{animation:salta .55s cubic-bezier(.3,1.5,.5,1)}
+@keyframes salta{0%,100%{transform:translateY(0) scale(1)}
+ 30%{transform:translateY(-26px) scale(.96,1.06)}
+ 60%{transform:translateY(0) scale(1.06,.94)}}
+#gato.meneo .cuerpo-g{animation:meneo .5s ease-in-out 3}
+@keyframes meneo{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+.cola{transform-origin:22% 40%;animation:cola 2.6s ease-in-out infinite}
+@keyframes cola{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(11deg)}}
+.oreja-i{transform-origin:bottom right}
+.oreja-d{transform-origin:bottom left}
+#gato.alerta .oreja-i{animation:oi .4s ease}
+#gato.alerta .oreja-d{animation:od .4s ease}
+@keyframes oi{50%{transform:rotate(-13deg)}}
+@keyframes od{50%{transform:rotate(13deg)}}
+.parpado{transform-origin:center top;transform:scaleY(0)}
+#gato.parpadea .parpado{animation:parp .17s ease}
+@keyframes parp{0%,100%{transform:scaleY(0)}50%{transform:scaleY(1)}}
+.pupila{transition:transform .22s cubic-bezier(.3,1.4,.4,1)}
+.brillo-nariz{opacity:0;transition:opacity .3s}
+#gato.escaneando .brillo-nariz{opacity:1;animation:pulsoNariz 1.1s ease-in-out infinite}
+@keyframes pulsoNariz{0%,100%{opacity:.35}50%{opacity:1}}
+.ojo-cerrado,.ojo-feliz,.ojo-triste,.ojo-corazon{display:none}
+#gato[data-cara="feliz"] .ojo-normal{display:none}
+#gato[data-cara="feliz"] .ojo-feliz{display:block}
+#gato[data-cara="dormido"] .ojo-normal{display:none}
+#gato[data-cara="dormido"] .ojo-cerrado{display:block}
+#gato[data-cara="triste"] .ojo-normal{display:none}
+#gato[data-cara="triste"] .ojo-triste{display:block}
+#gato[data-cara="amor"] .ojo-normal{display:none}
+#gato[data-cara="amor"] .ojo-corazon{display:block}
+
+.globo{
+  position:absolute;top:6%;left:50%;transform:translateX(-50%) scale(.85);
+  max-width:82%;padding:12px 16px;border-radius:20px;opacity:0;pointer-events:none;
+  background:linear-gradient(150deg,#fff,#F1EAFF);color:#2A1155;
+  font-weight:800;font-size:15px;line-height:1.35;text-align:center;
+  box-shadow:0 14px 30px rgba(0,0,0,.4);transition:.32s cubic-bezier(.2,1.4,.4,1);
+}
+.globo.on{opacity:1;transform:translateX(-50%) scale(1)}
+.globo::after{content:"";position:absolute;bottom:-9px;left:50%;margin-left:-9px;
+  border:9px solid transparent;border-top-color:#F1EAFF;border-bottom:0}
+
+.corazones{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.corazones span{position:absolute;font-size:22px;animation:sube 1.5s ease-out forwards}
+@keyframes sube{0%{opacity:1;transform:translateY(0) scale(.5)}
+ 100%{opacity:0;transform:translateY(-130px) scale(1.25)}}
+
+.acciones{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:7px;padding:6px 12px 12px;
+}
+.acc{
+  display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 3px 9px;
+  border-radius:17px;background:rgba(255,255,255,.06);border:1px solid var(--borde);
+  transition:.18s;position:relative;
+}
+.acc:active{transform:scale(.93);background:rgba(168,85,247,.28)}
+.acc .ic{font-size:23px;line-height:1}
+.acc .tx{font-size:9.5px;font-weight:800;letter-spacing:.4px;color:var(--texto-tenue);text-transform:uppercase}
+.acc.destacada{
+  background:linear-gradient(150deg,var(--morado-vivo),#6D28D9);border-color:#C4B5FD;
+  box-shadow:0 8px 22px rgba(168,85,247,.42);
+}
+.acc.destacada .tx{color:#fff}
+.acc.urgente::before{
+  content:"";position:absolute;inset:-3px;border-radius:20px;
+  border:2px solid var(--coral);animation:latido 1.1s ease-in-out infinite;
+}
+@keyframes latido{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+.acc .punto{position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;
+  background:var(--coral);box-shadow:0 0 0 3px rgba(251,113,133,.25)}
+
+nav{
+  position:relative;z-index:6;display:grid;grid-template-columns:repeat(4,1fr);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(14,6,32,.86);backdrop-filter:blur(16px);border-top:1px solid var(--borde);
+}
+nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;
+  border-radius:14px;color:var(--texto-tenue);font-size:9.5px;font-weight:800;
+  letter-spacing:.4px;text-transform:uppercase;transition:.18s;position:relative}
+nav button .ic{font-size:20px}
+nav button.on{color:var(--lila);background:rgba(168,85,247,.16)}
+nav button .aviso{position:absolute;top:4px;right:calc(50% - 20px);width:8px;height:8px;
+  border-radius:50%;background:var(--coral)}
+
+.hoja{flex:1;overflow-y:auto;padding:4px 16px 16px;-webkit-overflow-scrolling:touch}
+.hoja::-webkit-scrollbar{width:0}
+.tarjeta{
+  background:linear-gradient(160deg,var(--panel),var(--panel-alto));
+  border:1px solid var(--borde);border-radius:var(--radio);padding:15px;margin-bottom:12px;
+  box-shadow:var(--sombra);
+}
+.tarjeta h3{margin:0 0 4px;font-size:15px;letter-spacing:.2px}
+.tarjeta p{margin:0;font-size:13px;line-height:1.5;color:var(--texto-tenue)}
+.rotulo{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lila);
+  font-weight:900;margin:16px 0 9px}
+
+.cita{display:flex;gap:12px;align-items:center;padding:13px 14px;border-radius:18px;
+  background:rgba(255,255,255,.05);border:1px solid var(--borde);margin-bottom:9px;
+  transition:.2s}
+.cita.proxima{border-color:var(--morado-vivo);background:rgba(168,85,247,.14)}
+.cita.hecha{opacity:.45}
+.cita .fecha{width:50px;text-align:center;flex:none}
+.cita .fecha .d{font-size:21px;font-weight:900;line-height:1}
+.cita .fecha .m{font-size:9.5px;text-transform:uppercase;letter-spacing:1px;color:var(--texto-tenue)}
+.cita .info{flex:1;min-width:0}
+.cita .info b{display:block;font-size:13.5px;margin-bottom:2px}
+.cita .info span{font-size:11.5px;color:var(--texto-tenue)}
+.cita .marca-ok{font-size:19px}
+
+.leccion{
+  display:flex;gap:12px;align-items:center;padding:14px;border-radius:18px;margin-bottom:10px;
+  background:linear-gradient(140deg,rgba(139,92,246,.2),rgba(34,211,238,.09));
+  border:1px solid var(--borde);transition:.18s;width:100%;text-align:left;
+}
+.leccion:active{transform:scale(.98)}
+.leccion .emo{font-size:27px;flex:none;width:46px;height:46px;border-radius:14px;
+  display:grid;place-items:center;background:rgba(0,0,0,.28)}
+.leccion .cont{flex:1;min-width:0}
+.leccion .cont b{display:block;font-size:14px;margin-bottom:2px}
+.leccion .cont span{font-size:11.5px;color:var(--texto-tenue);display:block;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.leccion.completa .emo{background:rgba(52,211,153,.24)}
+.leccion .estado{font-size:17px;flex:none}
+
+.logro{display:flex;gap:12px;align-items:center;padding:12px;border-radius:17px;
+  background:rgba(255,255,255,.05);border:1px solid var(--borde);margin-bottom:9px;opacity:.42}
+.logro.on{opacity:1;background:linear-gradient(140deg,rgba(251,191,36,.2),rgba(255,107,181,.12));
+  border-color:var(--ambar)}
+.logro .med{font-size:29px;flex:none}
+.logro b{display:block;font-size:13.5px}
+.logro span{font-size:11.5px;color:var(--texto-tenue)}
+
+.rejilla{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.prenda{padding:13px 6px;border-radius:17px;background:rgba(255,255,255,.05);
+  border:1px solid var(--borde);text-align:center;transition:.18s}
+.prenda:active{transform:scale(.94)}
+.prenda.puesta{border-color:var(--menta);background:rgba(52,211,153,.16)}
+.prenda.bloqueada{opacity:.4}
+.prenda .em{font-size:29px;display:block;margin-bottom:5px}
+.prenda .nm{font-size:10.5px;font-weight:800;display:block}
+.prenda .pr{font-size:10px;color:var(--ambar);font-weight:800}
+
+.aviso-yape{
+  position:fixed;top:calc(10px + env(safe-area-inset-top));left:50%;
+  transform:translateX(-50%) translateY(-160%);
+  width:min(430px,calc(100vw - 20px));z-index:70;
+  background:linear-gradient(150deg,#FFFFFF,#F3EDFF);color:#1B0B36;
+  border-radius:20px;padding:13px 15px;display:flex;gap:12px;align-items:center;
+  box-shadow:0 20px 44px rgba(0,0,0,.5);transition:transform .45s cubic-bezier(.2,1.3,.4,1);
+  cursor:pointer;
+}
+.aviso-yape.on{transform:translateX(-50%) translateY(0)}
+.aviso-yape .ico{width:42px;height:42px;border-radius:13px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--morado-vivo),var(--cian));font-size:23px}
+.aviso-yape .txt{flex:1;min-width:0}
+.aviso-yape .txt b{display:block;font-size:13.5px;margin-bottom:2px}
+.aviso-yape .txt span{font-size:12px;color:#5B4A7A;display:block;line-height:1.35}
+.aviso-yape .hora{font-size:10px;color:#8B7BA8;flex:none;align-self:flex-start}
+
+.velo{
+  position:fixed;inset:0;z-index:80;background:rgba(8,3,18,.82);backdrop-filter:blur(8px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.velo.on{display:flex;animation:apare .22s ease}
+@keyframes apare{from{opacity:0}to{opacity:1}}
+.modal{
+  width:min(460px,100%);max-height:92dvh;overflow-y:auto;
+  background:linear-gradient(175deg,#2A1450,#170A2C);
+  border:1px solid var(--borde);border-top-left-radius:30px;border-top-right-radius:30px;
+  padding:10px 20px calc(22px + env(safe-area-inset-bottom));
+  animation:sube-modal .34s cubic-bezier(.2,1.1,.3,1);
+}
+@keyframes sube-modal{from{transform:translateY(100%)}to{transform:none}}
+.asa{width:44px;height:4px;border-radius:99px;background:var(--borde);margin:0 auto 16px}
+.modal h2{margin:0 0 6px;font-size:20px}
+.modal p{font-size:13.5px;line-height:1.6;color:var(--texto-tenue);margin:0 0 12px}
+
+.btn{
+  display:block;width:100%;padding:15px;border-radius:18px;font-size:15px;font-weight:900;
+  letter-spacing:.3px;transition:.18s;margin-top:9px;
+  background:linear-gradient(145deg,var(--morado-vivo),#6D28D9);color:#fff;
+  box-shadow:0 10px 26px rgba(139,92,246,.4);
+}
+.btn:active{transform:scale(.97)}
+.btn.fantasma{background:rgba(255,255,255,.07);border:1px solid var(--borde);
+  box-shadow:none;color:var(--texto-tenue)}
+.btn.peligro{background:linear-gradient(145deg,#FB7185,#E11D48);box-shadow:0 10px 26px rgba(251,113,133,.4)}
+.btn.menta{background:linear-gradient(145deg,#34D399,#059669);box-shadow:0 10px 26px rgba(52,211,153,.35)}
+
+.sensor-zona{position:relative;width:190px;height:190px;margin:14px auto 6px;display:grid;place-items:center}
+.sensor-anillo{position:absolute;inset:0;transform:rotate(-90deg)}
+.sensor-anillo circle{fill:none;stroke-width:11;stroke-linecap:round}
+.sensor-anillo .fondo-c{stroke:rgba(255,255,255,.09)}
+.sensor-anillo .prog{stroke:url(#degSensor);transition:stroke-dashoffset .12s linear}
+.huella{
+  width:126px;height:126px;border-radius:50%;display:grid;place-items:center;font-size:52px;
+  background:radial-gradient(circle at 40% 35%, rgba(168,85,247,.4), rgba(34,211,238,.14));
+  border:2px solid var(--borde);transition:.25s;touch-action:none;
+}
+.huella.activa{transform:scale(1.06);border-color:var(--cian);
+  box-shadow:0 0 44px rgba(34,211,238,.5), inset 0 0 30px rgba(168,85,247,.35)}
+.cuenta{font-size:13px;text-align:center;color:var(--texto-tenue);font-weight:800;
+  letter-spacing:.4px;min-height:20px}
+
+.resultado{text-align:center;padding:6px 0 2px}
+.resultado .emblema{font-size:56px;line-height:1;margin-bottom:8px}
+.resultado .titulo{font-size:22px;font-weight:900;margin-bottom:6px}
+.resultado.estable .titulo{color:var(--menta)}
+.resultado.grave .titulo{color:var(--ambar)}
+.resultado.priorizable .titulo{color:var(--coral)}
+.datos{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}
+.dato{background:rgba(0,0,0,.28);border:1px solid var(--borde);border-radius:15px;padding:11px}
+.dato .k{font-size:9.5px;text-transform:uppercase;letter-spacing:1px;color:var(--texto-tenue);font-weight:800}
+.dato .v{font-size:17px;font-weight:900;margin-top:3px;font-variant-numeric:tabular-nums}
+.nota{font-size:11.5px;line-height:1.55;color:var(--texto-tenue);
+  background:rgba(0,0,0,.26);border-left:3px solid var(--morado);border-radius:0 12px 12px 0;
+  padding:10px 12px;margin-top:10px}
+
+.premio{position:fixed;inset:0;z-index:90;display:none;place-items:center;pointer-events:none}
+.premio.on{display:grid}
+.premio .caja{text-align:center;animation:pop .6s cubic-bezier(.2,1.6,.4,1);
+  padding:22px 30px;border-radius:26px;background:rgba(11,5,24,.86);
+  backdrop-filter:blur(10px);border:1px solid var(--borde);
+  box-shadow:0 24px 60px rgba(0,0,0,.6)}
+@keyframes pop{0%{transform:scale(0) rotate(-25deg);opacity:0}
+ 60%{transform:scale(1.18) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.premio .grande{font-size:76px}
+.premio .msj{font-size:20px;font-weight:900;margin-top:6px;
+  background:linear-gradient(90deg,var(--ambar),var(--rosa));-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent}
+#confeti{position:fixed;inset:0;z-index:88;pointer-events:none;display:none}
+#confeti.on{display:block}
+
+.franja{
+  display:flex;gap:9px;align-items:center;padding:11px 13px;border-radius:16px;
+  font-size:12.5px;line-height:1.45;margin-bottom:11px;font-weight:700;
+}
+.franja.info{background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.34);color:#A5F3FC}
+.franja.alerta{background:rgba(251,113,133,.14);border:1px solid rgba(251,113,133,.38);color:#FECDD3}
+.franja.ok{background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.35);color:#A7F3D0}
+.franja .e{font-size:19px;flex:none}
+
+.pie{font-size:10.5px;color:#6D5F8C;text-align:center;line-height:1.5;padding:6px 8px 2px}
+
+body.con-tour .velo{align-items:flex-end;padding-bottom:206px}
+body.con-tour .modal{max-height:calc(100dvh - 230px);border-radius:26px}
+body.con-tour .aviso-yape{top:calc(56px + env(safe-area-inset-top))}
+
+.tour{
+  position:fixed;left:50%;bottom:0;transform:translateX(-50%) translateY(105%);
+  width:min(460px,100vw);z-index:95;padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(20,8,40,.97),rgba(11,5,24,.99));
+  border-top:1px solid var(--morado-vivo);backdrop-filter:blur(14px);
+  box-shadow:0 -14px 40px rgba(0,0,0,.6);transition:transform .4s cubic-bezier(.2,1.1,.3,1);
+}
+.tour.on{transform:translateX(-50%) translateY(0)}
+.tour .cab{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.tour .paso{font-size:9.5px;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--lila);font-weight:900}
+.tour .pista-t{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.tour .pista-t i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--cian),var(--morado-vivo));transition:width .4s}
+.tour .txt{font-size:14px;line-height:1.5;font-weight:700;min-height:42px}
+.tour .txt b{color:var(--cian)}
+.tour .ctrl{display:flex;gap:7px;margin-top:11px}
+.tour .ctrl button{flex:1;padding:10px;border-radius:13px;font-size:12px;font-weight:800;
+  background:rgba(255,255,255,.07);border:1px solid var(--borde);letter-spacing:.4px}
+.tour .ctrl button.principal{background:linear-gradient(145deg,var(--morado-vivo),#6D28D9);
+  border-color:transparent;color:#fff}
+.tour .ctrl button:active{transform:scale(.96)}
+
+.foco{
+  position:fixed;z-index:94;border-radius:20px;pointer-events:none;
+  box-shadow:0 0 0 3px var(--cian), 0 0 0 9999px rgba(8,3,18,.55);
+  transition:.42s cubic-bezier(.2,1,.3,1);opacity:0;
+}
+.foco.on{opacity:1}
+
+.btn-tour{
+  position:fixed;top:calc(58px + env(safe-area-inset-top));right:12px;z-index:60;
+  padding:7px 13px;border-radius:99px;font-size:11px;font-weight:900;letter-spacing:.5px;
+  background:linear-gradient(145deg,var(--cian),var(--morado-vivo));color:#0B0518;
+  box-shadow:0 6px 18px rgba(34,211,238,.35);
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="estrellas" id="estrellas"></div>
+
+  <header>
+    <div class="marca">
+      <div class="logo">🐱</div>
+      <div><b>MichiCheck</b><small>Mi michi</small></div>
+    </div>
+    <div class="chip moneda">🐟 <span class="n" id="hudMonedas">0</span></div>
+    <div class="chip racha">🔥 <span class="n" id="hudRacha">0</span></div>
+  </header>
+
+  <div class="barras">
+    <div class="barra">
+      <div class="et"><span>Energía</span><span id="numEnergia">100</span></div>
+      <div class="pista"><div class="relleno energia" id="barEnergia" style="width:100%"></div></div>
+    </div>
+    <div class="barra">
+      <div class="et"><span>Ánimo</span><span id="numAnimo">100</span></div>
+      <div class="pista"><div class="relleno animo" id="barAnimo" style="width:100%"></div></div>
+    </div>
+    <div class="barra">
+      <div class="et"><span>Salud</span><span id="numSalud">100</span></div>
+      <div class="pista"><div class="relleno salud" id="barSalud" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <main>
+    <section class="vista on" data-vista="michi">
+      <div class="escena">
+        <div class="suelo"></div>
+        <div class="corazones" id="corazones"></div>
+        <div class="globo" id="globo"></div>
+        <svg id="gato" viewBox="0 0 300 300" data-cara="normal" aria-label="Michi">
+          <defs>
+            <linearGradient id="pelo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#DCD6E8"/><stop offset="1" stop-color="#A79FC0"/>
+            </linearGradient>
+            <linearGradient id="peloOsc" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#B6AECB"/><stop offset="1" stop-color="#8B82A6"/>
+            </linearGradient>
+            <linearGradient id="panelOjo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1B1030"/><stop offset="1" stop-color="#0B0518"/>
+            </linearGradient>
+            <radialGradient id="nariz">
+              <stop offset="0" stop-color="#D8B4FE"/><stop offset="1" stop-color="#7C3AED"/>
+            </radialGradient>
+            <radialGradient id="glow">
+              <stop offset="0" stop-color="#67E8F9" stop-opacity=".95"/>
+              <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="degSensor" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A855F7"/>
+            </linearGradient>
+          </defs>
+
+          <g class="cuerpo-g">
+            <g class="cola">
+              <path d="M232 232 C272 226 282 190 262 168 C252 157 236 160 234 174 C232 187 246 190 250 181"
+                    fill="none" stroke="url(#peloOsc)" stroke-width="17" stroke-linecap="round"/>
+            </g>
+
+            <ellipse cx="150" cy="292" rx="72" ry="9" fill="#000" opacity=".28"/>
+            <path d="M92 246 C92 196 116 176 150 176 C184 176 208 196 208 246 C208 266 190 274 150 274 C110 274 92 266 92 246 Z"
+                  fill="url(#pelo)"/>
+            <path d="M124 250 C124 232 136 224 150 224 C164 224 176 232 176 250 C176 262 166 266 150 266 C134 266 124 262 124 250 Z"
+                  fill="#EFEAF8" opacity=".75"/>
+            <rect x="90" y="212" width="120" height="15" rx="7.5" fill="#7C3AED"/>
+            <rect x="90" y="212" width="120" height="15" rx="7.5" fill="#A855F7" opacity=".45"/>
+            <circle cx="150" cy="219.5" r="10" fill="#160A2A"/>
+            <circle cx="150" cy="219.5" r="5" fill="#22D3EE"/>
+            <ellipse cx="112" cy="272" rx="17" ry="11" fill="#EFEAF8"/>
+            <ellipse cx="188" cy="272" rx="17" ry="11" fill="#EFEAF8"/>
+
+            <g class="cabeza">
+              <path class="oreja-i" d="M84 96 L74 44 L124 74 Z" fill="url(#peloOsc)"/>
+              <path d="M92 92 L86 60 L114 78 Z" fill="#FF9EC7" opacity=".85"/>
+              <path class="oreja-d" d="M216 96 L226 44 L176 74 Z" fill="url(#peloOsc)"/>
+              <path d="M208 92 L214 60 L186 78 Z" fill="#FF9EC7" opacity=".85"/>
+
+              <ellipse cx="150" cy="128" rx="80" ry="70" fill="url(#pelo)"/>
+              <path d="M104 78 C112 92 118 100 122 106" stroke="#9A93AE" stroke-width="6"
+                    stroke-linecap="round" fill="none" opacity=".55"/>
+              <path d="M196 78 C188 92 182 100 178 106" stroke="#9A93AE" stroke-width="6"
+                    stroke-linecap="round" fill="none" opacity=".55"/>
+              <path d="M150 68 L150 86" stroke="#9A93AE" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+
+              <rect x="88" y="104" width="124" height="52" rx="26" fill="url(#panelOjo)"/>
+              <rect x="88" y="104" width="124" height="52" rx="26" fill="none"
+                    stroke="#3C2A5E" stroke-width="2"/>
+
+              <g class="ojo-normal">
+                <g class="pupila" id="pupilaI">
+                  <ellipse cx="119" cy="130" rx="17" ry="19" fill="#22D3EE"/>
+                  <ellipse cx="119" cy="130" rx="7" ry="15" fill="#0B0518"/>
+                  <circle cx="113" cy="122" r="5" fill="#fff" opacity=".92"/>
+                </g>
+                <g class="pupila" id="pupilaD">
+                  <ellipse cx="181" cy="130" rx="17" ry="19" fill="#22D3EE"/>
+                  <ellipse cx="181" cy="130" rx="7" ry="15" fill="#0B0518"/>
+                  <circle cx="175" cy="122" r="5" fill="#fff" opacity=".92"/>
+                </g>
+                <g class="parpado">
+                  <rect x="98" y="106" width="42" height="46" rx="21" fill="#0B0518"/>
+                  <rect x="160" y="106" width="42" height="46" rx="21" fill="#0B0518"/>
+                </g>
+              </g>
+              <g class="ojo-feliz">
+                <path d="M104 136 Q119 116 134 136" stroke="#22D3EE" stroke-width="8"
+                      fill="none" stroke-linecap="round"/>
+                <path d="M166 136 Q181 116 196 136" stroke="#22D3EE" stroke-width="8"
+                      fill="none" stroke-linecap="round"/>
+              </g>
+              <g class="ojo-cerrado">
+                <path d="M104 130 Q119 142 134 130" stroke="#7C3AED" stroke-width="7"
+                      fill="none" stroke-linecap="round"/>
+                <path d="M166 130 Q181 142 196 130" stroke="#7C3AED" stroke-width="7"
+                      fill="none" stroke-linecap="round"/>
+              </g>
+              <g class="ojo-triste">
+                <ellipse cx="119" cy="134" rx="14" ry="15" fill="#5B8FA8"/>
+                <ellipse cx="181" cy="134" rx="14" ry="15" fill="#5B8FA8"/>
+                <path d="M102 116 L136 124" stroke="#3C2A5E" stroke-width="6" stroke-linecap="round"/>
+                <path d="M198 116 L164 124" stroke="#3C2A5E" stroke-width="6" stroke-linecap="round"/>
+              </g>
+              <g class="ojo-corazon">
+                <path d="M119 142 C104 130 106 116 114 116 C118 116 119 120 119 122
+                         C119 120 120 116 124 116 C132 116 134 130 119 142 Z" fill="#FF6BB5"/>
+                <path d="M181 142 C166 130 168 116 176 116 C180 116 181 120 181 122
+                         C181 120 182 116 186 116 C194 116 196 130 181 142 Z" fill="#FF6BB5"/>
+              </g>
+
+              <circle class="brillo-nariz" cx="150" cy="168" r="34" fill="url(#glow)"/>
+              <path d="M138 162 L162 162 L150 178 Z" fill="url(#nariz)"/>
+              <circle cx="150" cy="167" r="4" fill="#F5D0FE" opacity=".85"/>
+              <path d="M150 178 L150 186" stroke="#8B82A6" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M150 186 Q138 196 130 186" stroke="#8B82A6" stroke-width="3.5"
+                    fill="none" stroke-linecap="round"/>
+              <path d="M150 186 Q162 196 170 186" stroke="#8B82A6" stroke-width="3.5"
+                    fill="none" stroke-linecap="round"/>
+
+              <g stroke="#EFEAF8" stroke-width="2.6" stroke-linecap="round" opacity=".7">
+                <path d="M78 160 L38 152"/><path d="M78 170 L40 172"/><path d="M80 180 L44 192"/>
+                <path d="M222 160 L262 152"/><path d="M222 170 L260 172"/><path d="M220 180 L256 192"/>
+              </g>
+              <g id="accesorio"></g>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <div class="acciones">
+        <button class="acc" data-accion="alimentar"><span class="ic">🐟</span><span class="tx">Comer</span></button>
+        <button class="acc" data-accion="jugar"><span class="ic">🧶</span><span class="tx">Jugar</span></button>
+        <button class="acc" data-accion="mimar"><span class="ic">🤲</span><span class="tx">Mimar</span></button>
+        <button class="acc" data-accion="dormir"><span class="ic">🌙</span><span class="tx">Dormir</span></button>
+        <button class="acc destacada" data-accion="tamizaje" id="btnTamizaje">
+          <span class="ic">🫆</span><span class="tx">Dedito</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="vista" data-vista="agenda">
+      <div class="hoja">
+        <div class="franja info"><span class="e">⏰</span>
+          <span id="franjaHorario">Las alertas suenan después de tu horario de trabajo.</span></div>
+        <div class="rotulo">Lo que viene</div>
+        <div id="listaCitas"></div>
+        <div class="rotulo">Etapa del tratamiento</div>
+        <div class="tarjeta" id="tarjetaEtapa"></div>
+        <div class="rotulo">Tamizajes de esta semana</div>
+        <div class="tarjeta" id="tarjetaTamizajes"></div>
+      </div>
+    </section>
+
+    <section class="vista" data-vista="aprender">
+      <div class="hoja">
+        <div class="franja ok"><span class="e">🎓</span>
+          <span>Cada lección da 🐟 y le sube el ánimo a tu michi.</span></div>
+        <div class="rotulo">Lecciones</div>
+        <div id="listaLecciones"></div>
+        <div class="rotulo">Señales para llamar al hospital hoy mismo</div>
+        <div class="tarjeta">
+          <p id="senalesAlarma"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="vista" data-vista="premios">
+      <div class="hoja">
+        <div class="rotulo">Ropita del michi</div>
+        <div class="rejilla" id="tienda"></div>
+        <div class="rotulo">Logros</div>
+        <div id="listaLogros"></div>
+        <div class="rotulo">Tu michi</div>
+        <div class="tarjeta" id="tarjetaMichi"></div>
+        <div class="pie">
+          MichiCheck no es un análisis de sangre. Orienta y avisa;<br>
+          el hemograma y la decisión clínica siguen siendo del hospital.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="on" data-ir="michi"><span class="ic">🐱</span>Michi</button>
+    <button data-ir="agenda"><span class="ic">📅</span>Agenda<span class="aviso" id="avisoAgenda" hidden></span></button>
+    <button data-ir="aprender"><span class="ic">🎓</span>Aprender</button>
+    <button data-ir="premios"><span class="ic">🏆</span>Premios</button>
+  </nav>
+</div>
+
+<div class="aviso-yape" id="avisoYape">
+  <div class="ico">🐱</div>
+  <div class="txt"><b id="avisoTitulo">Michi te llama</b><span id="avisoCuerpo"></span></div>
+  <div class="hora" id="avisoHora"></div>
+</div>
+
+<button class="btn-tour" id="btnTour">▶ DEMO</button>
+<div class="foco" id="foco"></div>
+<div class="tour" id="tour">
+  <div class="cab">
+    <span class="paso" id="tourPaso">1 / 14</span>
+    <span class="pista-t"><i id="tourBarra" style="width:0%"></i></span>
+  </div>
+  <div class="txt" id="tourTexto"></div>
+  <div class="ctrl">
+    <button id="tourAnterior">◀ Atrás</button>
+    <button id="tourPausa" class="principal">⏸ Pausa</button>
+    <button id="tourSiguiente">Siguiente ▶</button>
+    <button id="tourSalir">✕</button>
+  </div>
+</div>
+
+<div class="velo" id="velo"><div class="modal" id="modal"></div></div>
+<div class="premio" id="premio"><div class="caja">
+  <div class="grande" id="premioIcono">🏆</div><div class="msj" id="premioTexto"></div>
+</div></div>
+<canvas id="confeti"></canvas>
+
+<script>
+"use strict";
+
+const LLAVE = "michicheck.v3";
+const HOY = () => new Date();
+
+const estadoInicial = () => ({
+  nombreMichi: "Michi",
+  nombreNino: "",
+  monedas: 30,
+  racha: 0,
+  ultimoTamizaje: null,
+  energia: 78, animo: 72, salud: 88,
+  lecciones: {},
+  logros: {},
+  prenda: null,
+  prendas: ["gorro"],
+  historial: [],
+  etapa: "mantenimiento",
+  inicioEtapa: null,
+  jornadaFin: "18:00",
+  citas: null,
+  postergaciones: 0,
+  visto: false
+});
+
+let S = cargar();
+function cargar(){
+  try{
+    const crudo = localStorage.getItem(LLAVE);
+    if(!crudo) return estadoInicial();
+    return Object.assign(estadoInicial(), JSON.parse(crudo));
+  }catch(e){ return estadoInicial(); }
+}
+function guardar(){ try{ localStorage.setItem(LLAVE, JSON.stringify(S)); }catch(e){} }
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const limitar = (v,a,b) => Math.max(a, Math.min(b, v));
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","set","oct","nov","dic"];
+
+let ctxAudio = null;
+function audio(){
+  if(!ctxAudio){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    ctxAudio = new AC();
+  }
+  if(ctxAudio.state === "suspended") ctxAudio.resume();
+  return ctxAudio;
+}
+
+function maullido(opciones){
+  const o = Object.assign({tono:540, dur:0.62, vol:0.20, tristeza:0}, opciones||{});
+  const c = audio(); if(!c) return;
+  const t = c.currentTime;
+  const salida = c.createGain();
+  salida.gain.setValueAtTime(0, t);
+  salida.gain.linearRampToValueAtTime(o.vol, t + 0.05);
+  salida.gain.setValueAtTime(o.vol, t + o.dur * 0.6);
+  salida.gain.exponentialRampToValueAtTime(0.0005, t + o.dur);
+  salida.connect(c.destination);
+
+  const formante1 = c.createBiquadFilter();
+  formante1.type = "bandpass"; formante1.Q.value = 5.5;
+  const formante2 = c.createBiquadFilter();
+  formante2.type = "bandpass"; formante2.Q.value = 9;
+  const mezcla = c.createGain(); mezcla.gain.value = 0.55;
+  formante1.connect(salida); formante2.connect(mezcla); mezcla.connect(salida);
+
+  const base = o.tono * (1 - o.tristeza * 0.22);
+  const cima = base * (o.tristeza ? 1.02 : 1.16);
+  const cierre = base * (o.tristeza ? 0.55 : 0.66);
+
+  formante1.frequency.setValueAtTime(base * 1.45, t);
+  formante1.frequency.linearRampToValueAtTime(cima * 2.0, t + o.dur * 0.3);
+  formante1.frequency.linearRampToValueAtTime(cierre * 1.25, t + o.dur);
+  formante2.frequency.setValueAtTime(base * 3.4, t);
+  formante2.frequency.linearRampToValueAtTime(cima * 4.4, t + o.dur * 0.28);
+  formante2.frequency.linearRampToValueAtTime(cierre * 2.1, t + o.dur);
+
+  [["sawtooth", 1, 0.42], ["triangle", 2, 0.20], ["sine", 0.5, 0.16]].forEach(([forma, mult, nivel]) => {
+    const osc = c.createOscillator(); osc.type = forma;
+    const g = c.createGain(); g.gain.value = nivel;
+    osc.frequency.setValueAtTime(base * mult * 0.78, t);
+    osc.frequency.linearRampToValueAtTime(cima * mult, t + o.dur * 0.26);
+    osc.frequency.linearRampToValueAtTime(cierre * mult, t + o.dur);
+    osc.connect(g); g.connect(formante1); g.connect(formante2);
+    osc.start(t); osc.stop(t + o.dur + 0.05);
+  });
+
+  const vibrato = c.createOscillator(); vibrato.frequency.value = 19;
+  const prof = c.createGain(); prof.gain.value = 26;
+  vibrato.connect(prof); prof.connect(formante1.frequency);
+  vibrato.start(t); vibrato.stop(t + o.dur);
+}
+
+function ronroneo(segundos){
+  const c = audio(); if(!c) return null;
+  const t = c.currentTime;
+  const largo = c.sampleRate * 0.5;
+  const buffer = c.createBuffer(1, largo, c.sampleRate);
+  const datos = buffer.getChannelData(0);
+  for(let i = 0; i < largo; i++) datos[i] = (Math.random() * 2 - 1) * 0.5;
+  const ruido = c.createBufferSource(); ruido.buffer = buffer; ruido.loop = true;
+
+  const paso = c.createBiquadFilter(); paso.type = "lowpass"; paso.frequency.value = 320;
+  const cuerpo = c.createBiquadFilter(); cuerpo.type = "bandpass";
+  cuerpo.frequency.value = 145; cuerpo.Q.value = 2.2;
+
+  const amp = c.createGain(); amp.gain.value = 0;
+  const mod = c.createOscillator(); mod.type = "sine"; mod.frequency.value = 26;
+  const profMod = c.createGain(); profMod.gain.value = 0.11;
+  mod.connect(profMod); profMod.connect(amp.gain);
+  amp.gain.setValueAtTime(0.03, t);
+
+  ruido.connect(paso); paso.connect(cuerpo); cuerpo.connect(amp); amp.connect(c.destination);
+  ruido.start(t); mod.start(t);
+  const fin = t + (segundos || 2);
+  amp.gain.setValueAtTime(0.03, fin - 0.3);
+  amp.gain.linearRampToValueAtTime(0, fin);
+  ruido.stop(fin + 0.05); mod.stop(fin + 0.05);
+  return { detener(){ try{ ruido.stop(); mod.stop(); }catch(e){} } };
+}
+
+function campanita(){
+  const c = audio(); if(!c) return;
+  const t = c.currentTime;
+  [[1046.5, 0], [1568, 0.09]].forEach(([f, retardo]) => {
+    const osc = c.createOscillator(); osc.type = "sine"; osc.frequency.value = f;
+    const arm = c.createOscillator(); arm.type = "sine"; arm.frequency.value = f * 2;
+    const g = c.createGain(); const ga = c.createGain();
+    g.gain.setValueAtTime(0, t + retardo);
+    g.gain.linearRampToValueAtTime(0.17, t + retardo + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0006, t + retardo + 0.55);
+    ga.gain.setValueAtTime(0, t + retardo);
+    ga.gain.linearRampToValueAtTime(0.05, t + retardo + 0.01);
+    ga.gain.exponentialRampToValueAtTime(0.0004, t + retardo + 0.3);
+    osc.connect(g); arm.connect(ga); g.connect(c.destination); ga.connect(c.destination);
+    osc.start(t + retardo); osc.stop(t + retardo + 0.6);
+    arm.start(t + retardo); arm.stop(t + retardo + 0.35);
+  });
+}
+
+function tono(f, dur, vol, forma){
+  const c = audio(); if(!c) return;
+  const t = c.currentTime;
+  const osc = c.createOscillator(); osc.type = forma || "sine"; osc.frequency.value = f;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol || 0.12, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0005, t + (dur || 0.2));
+  osc.connect(g); g.connect(c.destination);
+  osc.start(t); osc.stop(t + (dur || 0.2) + 0.02);
+}
+
+function vibrar(patron){ if(navigator.vibrate) navigator.vibrate(patron); }
+
+const gato = $("#gato");
+const globo = $("#globo");
+let temporizadorGlobo = null;
+
+function cara(expresion, ms){
+  gato.dataset.cara = expresion;
+  if(ms) setTimeout(() => { gato.dataset.cara = expresionBase(); }, ms);
+}
+function expresionBase(){
+  if(S.energia < 22) return "dormido";
+  if(S.animo < 30 || S.salud < 45) return "triste";
+  if(S.animo > 82 && S.salud > 75) return "feliz";
+  return "normal";
+}
+function decir(texto, ms){
+  globo.textContent = texto;
+  globo.classList.add("on");
+  clearTimeout(temporizadorGlobo);
+  temporizadorGlobo = setTimeout(() => globo.classList.remove("on"), ms || 3200);
+}
+function gesto(clase, ms){
+  gato.classList.add(clase);
+  setTimeout(() => gato.classList.remove(clase), ms || 600);
+}
+function lanzarCorazones(emo, cantidad){
+  const capa = $("#corazones");
+  for(let i = 0; i < (cantidad || 5); i++){
+    const s = document.createElement("span");
+    s.textContent = emo || "💜";
+    s.style.left = (35 + Math.random() * 30) + "%";
+    s.style.top = (48 + Math.random() * 14) + "%";
+    s.style.animationDelay = (i * 0.11) + "s";
+    capa.appendChild(s);
+    setTimeout(() => s.remove(), 1700);
+  }
+}
+
+setInterval(() => {
+  if(gato.dataset.cara === "normal" && Math.random() < 0.55){
+    gato.classList.add("parpadea");
+    setTimeout(() => gato.classList.remove("parpadea"), 220);
+  }
+}, 3400);
+
+document.addEventListener("pointermove", e => {
+  const caja = gato.getBoundingClientRect();
+  if(!caja.width) return;
+  const cx = caja.left + caja.width / 2, cy = caja.top + caja.height * 0.44;
+  const dx = limitar((e.clientX - cx) / (caja.width / 2), -1, 1) * 5;
+  const dy = limitar((e.clientY - cy) / (caja.height / 2), -1, 1) * 4;
+  ["#pupilaI", "#pupilaD"].forEach(sel => {
+    const p = $(sel); if(p) p.style.transform = `translate(${dx}px,${dy}px)`;
+  });
+}, {passive: true});
+
+const FRASES_TOQUE = [
+  "¡Miau! Me hiciste cosquillas.",
+  "Prrr… otra vez, porfa.",
+  "Hoy me porté bien, ¿y tú?",
+  "¿Ya tomaste tu pastilla de la noche?",
+  "Cuando me pones el dedito, cuido tu sangre.",
+  "Te estaba esperando 💜"
+];
+let toques = 0;
+gato.addEventListener("click", () => {
+  toques++;
+  if(toques % 4 === 0){ gesto("saltando", 600); maullido({tono: 610}); }
+  else { gesto("meneo", 1500); maullido({tono: 520 + Math.random() * 90, dur: 0.5}); }
+  cara("feliz", 1600);
+  lanzarCorazones("💜", 3);
+  vibrar(18);
+  decir(FRASES_TOQUE[toques % FRASES_TOQUE.length], 2400);
+  S.animo = limitar(S.animo + 1, 0, 100);
+  pintarBarras(); guardar();
+});
+
+const LECCIONES = [
+  {id:"que_es", emo:"🩸", titulo:"¿Qué son los neutrófilos?",
+   resumen:"Los soldados de la sangre",
+   cuerpo:["Los neutrófilos son los glóbulos blancos que atacan a las bacterias. Son los primeros en llegar cuando entra un microbio.",
+     "La quimioterapia mata células que se dividen rápido. Las de la leucemia se dividen rápido, pero las de la médula que fabrican neutrófilos también. Por eso bajan.",
+     "Cuando quedan menos de 500 por microlitro se llama <b>neutropenia grave</b>. El niño se siente igual, pero está sin defensas.",
+     "Eso es exactamente lo que Michi busca cuando te pide el dedito."],
+   premio:12},
+  {id:"fiebre", emo:"🌡️", titulo:"La fiebre no espera a mañana",
+   resumen:"38 °C es una emergencia",
+   cuerpo:["Si tu hijo tiene <b>38 °C o más</b> y está en tratamiento, eso es una emergencia oncológica. No es «vamos mañana a ver».",
+     "Sin neutrófilos no hay pus, no hay hinchazón, no hay señal. La fiebre puede ser lo único que se vea, y la infección avanza en horas.",
+     "El antibiótico debe entrar en la <b>primera hora</b>. Si el hospital está a más de cuatro horas, se empieza antes de viajar, no al llegar.",
+     "Nunca le des paracetamol para «bajarla y ver». Esconde la única señal que tienes."],
+   premio:18},
+  {id:"mp6", emo:"💊", titulo:"Las tres reglas de la 6-MP",
+   resumen:"Noche, sin leche, siempre igual",
+   cuerpo:["<b>1. De noche, no de mañana.</b> Tomarla en la noche mejora los resultados. No es superstición: se midió.",
+     "<b>2. Sin leche ni yogur.</b> Los lácteos tienen xantina oxidasa, que destruye parte del medicamento. Una hora antes y una después: solo agua.",
+     "<b>3. Siempre igual.</b> Si un día con comida y otro sin, la dosis que llega a la sangre cambia sola.",
+     "Tomar menos del 95% de las dosis multiplica por <b>2.7</b> el riesgo de recaída. Son tres pastillas saltadas al mes."],
+   premio:22},
+  {id:"ventana", emo:"🎯", titulo:"La ventana del mantenimiento",
+   resumen:"Ni muy alto ni muy bajo",
+   cuerpo:["En el mantenimiento el objetivo no es «tener defensas altas». Es mantenerse en una ventana: entre <b>500 y 1500</b>.",
+     "Por encima de 1500, la dosis probablemente se quedó corta y la leucemia tiene espacio.",
+     "Por debajo de 500, la dosis es tóxica y el niño está desprotegido.",
+     "Hoy eso se comprueba con un hemograma al mes. Michi lo convierte en una línea que se ve cada semana."],
+   premio:20},
+  {id:"derechos", emo:"⚖️", titulo:"Lo que la ley les da",
+   resumen:"Ley 31041",
+   cuerpo:["La <b>Ley 31041</b> reconoce a las familias con un niño con cáncer un subsidio de <b>2 remuneraciones mínimas</b> y licencia laboral de hasta un año.",
+     "El SIS cubre el tratamiento completo, incluidos los traslados por referencia.",
+     "La mayoría de familias no lo cobra porque nadie se lo explicó.",
+     "Pídelo en Servicio Social del hospital. Si te dicen que no existe, insiste: existe."],
+   premio:25},
+  {id:"michi", emo:"🐱", titulo:"Qué mide Michi y qué no",
+   resumen:"Orienta, no reemplaza",
+   cuerpo:["Michi mira la sangre que pasa por los capilares de tu dedo con una luz verde. Cuenta los huecos que dejan las células blancas al pasar.",
+     "Con eso <b>estima</b> cuántas defensas hay. Es un tamizaje: puede decirte «esto no me gusta, vayan», nunca «está todo bien, no vayan».",
+     "No mide plaquetas ni hemoglobina, y <b>no reemplaza el hemograma</b>.",
+     "Si Michi dice que hay que ir, hay que ir. Si Michi dice que todo va bien pero el niño tiene fiebre, igual hay que ir."],
+   premio:15}
+];
+
+const LOGROS = [
+  {id:"primer", med:"🥇", titulo:"Primer dedito", texto:"Hiciste tu primer tamizaje"},
+  {id:"racha3", med:"🔥", titulo:"Tres seguidos", texto:"3 días sin fallar"},
+  {id:"racha7", med:"⭐", titulo:"Semana completa", texto:"7 días de racha"},
+  {id:"racha30", med:"👑", titulo:"Un mes entero", texto:"30 días de racha"},
+  {id:"sabio", med:"🎓", titulo:"Michi sabio", texto:"Todas las lecciones aprendidas"},
+  {id:"cuidador", med:"💜", titulo:"Buen cuidador", texto:"Michi con ánimo al tope"}
+];
+
+const PRENDAS = [
+  {id:"gorro", em:"🎩", nombre:"Sombrero", precio:0},
+  {id:"lazo", em:"🎀", nombre:"Lacito", precio:40},
+  {id:"lentes", em:"🕶️", nombre:"Lentes", precio:60},
+  {id:"corona", em:"👑", nombre:"Corona", precio:120},
+  {id:"bufanda", em:"🧣", nombre:"Chalina", precio:80},
+  {id:"medico", em:"🩺", nombre:"Doctor", precio:150}
+];
+
+const SENALES = "Fiebre de 38 °C o más · Sangrado de encías o nariz que no para · " +
+  "Moretones nuevos sin golpe · Palidez con cansancio raro · Vómitos que no ceden · " +
+  "Dolor de cabeza fuerte · Michi mostrando estado <b>grave</b> o <b>priorizable</b>.";
+
+function citasPorDefecto(){
+  const base = HOY();
+  const mas = d => { const x = new Date(base); x.setDate(x.getDate() + d); return x.toISOString().slice(0,10); };
+  return [
+    {f: mas(2), t: "Control con Hematología", d: "INSN San Borja · Consultorio 3", ok: false},
+    {f: mas(9), t: "Hemograma de control", d: "Laboratorio · en ayunas no hace falta", ok: false},
+    {f: mas(23), t: "Control de mantenimiento", d: "INSN San Borja · trae el carnet", ok: false},
+    {f: mas(37), t: "Evaluación de etapa", d: "Se revisa la dosis de 6-MP", ok: false}
+  ];
+}
+if(!S.citas) S.citas = citasPorDefecto();
+if(!S.inicioEtapa) S.inicioEtapa = HOY().toISOString().slice(0,10);
+
+const ETAPAS = {
+  induccion:{n:"Inducción", amb:"Hospitalario", ctrl:3, tam:2, riesgo:"bajo",
+    txt:"Es la fase en la que se busca la remisión. La más intensa y la más vigilada. Michi acompaña, no reemplaza ningún control."},
+  consolidacion:{n:"Consolidación", amb:"Mixto", ctrl:7, tam:3, riesgo:"moderado",
+    txt:"La remisión ya se logró; ahora se elimina lo que no se ve. El niño empieza a estar más tiempo en casa."},
+  intensificacion:{n:"Intensificación", amb:"Mixto", ctrl:7, tam:2, riesgo:"moderado",
+    txt:"Se vuelve a subir la intensidad para cerrar la puerta a la recaída. Los recuentos vuelven a bajar mucho."},
+  mantenimiento:{n:"Mantenimiento", amb:"En casa", ctrl:30, tam:7, riesgo:"alto",
+    txt:"Dos años de quimioterapia en casa, en pastillas. El niño se ve bien. Por eso es la fase donde ocurre casi todo el abandono."},
+  vigilancia:{n:"Vigilancia", amb:"En casa", ctrl:90, tam:30, riesgo:"moderado",
+    txt:"El tratamiento terminó. Ahora toca comprobar que no vuelva."}
+};
+
+function pintarBarras(){
+  [["energia","Energia"],["animo","Animo"],["salud","Salud"]].forEach(([k, sufijo]) => {
+    const v = Math.round(S[k]);
+    $("#bar" + sufijo).style.width = v + "%";
+    $("#num" + sufijo).textContent = v;
+  });
+  $("#hudMonedas").textContent = S.monedas;
+  $("#hudRacha").textContent = S.racha;
+  gato.dataset.cara = expresionBase();
+  const btn = $("#btnTamizaje");
+  btn.classList.toggle("urgente", tamizajePendiente());
+  $("#avisoAgenda").hidden = !tamizajePendiente();
+}
+
+function tamizajePendiente(){
+  if(!S.ultimoTamizaje) return true;
+  const paso = (Date.now() - new Date(S.ultimoTamizaje).getTime()) / 86400000;
+  const cada = ETAPAS[S.etapa] ? ETAPAS[S.etapa].tam : 7;
+  return paso >= cada;
+}
+
+function pintarAgenda(){
+  const cont = $("#listaCitas");
+  const hoy = HOY().toISOString().slice(0,10);
+  cont.innerHTML = S.citas.map((c, i) => {
+    const d = new Date(c.f + "T12:00:00");
+    const dias = Math.round((d - new Date(hoy + "T12:00:00")) / 86400000);
+    const clase = c.ok ? "hecha" : (dias <= 3 ? "proxima" : "");
+    const cuando = c.ok ? "Asistido" : dias === 0 ? "Hoy" : dias === 1 ? "Mañana"
+      : dias > 0 ? `En ${dias} días` : `Hace ${-dias} días`;
+    return `<div class="cita ${clase}" data-cita="${i}">
+      <div class="fecha"><div class="d">${d.getDate()}</div><div class="m">${MESES[d.getMonth()]}</div></div>
+      <div class="info"><b>${c.t}</b><span>${c.d} · ${cuando}</span></div>
+      <div class="marca-ok">${c.ok ? "✅" : "⏳"}</div></div>`;
+  }).join("");
+  cont.querySelectorAll("[data-cita]").forEach(el => {
+    el.onclick = () => {
+      const i = +el.dataset.cita;
+      S.citas[i].ok = !S.citas[i].ok;
+      if(S.citas[i].ok){ premiar(20, "✅", "¡Control cumplido!"); }
+      guardar(); pintarAgenda();
+    };
+  });
+
+  const e = ETAPAS[S.etapa];
+  const dias = Math.round((Date.now() - new Date(S.inicioEtapa + "T12:00:00").getTime()) / 86400000);
+  $("#tarjetaEtapa").innerHTML = `<h3>${e.n}</h3>
+    <p>${e.txt}</p>
+    <div class="datos">
+      <div class="dato"><div class="k">Ámbito</div><div class="v" style="font-size:14px">${e.amb}</div></div>
+      <div class="dato"><div class="k">Día de etapa</div><div class="v">${Math.max(0,dias)}</div></div>
+      <div class="dato"><div class="k">Control cada</div><div class="v">${e.ctrl} d</div></div>
+      <div class="dato"><div class="k">Riesgo abandono</div><div class="v" style="font-size:14px;text-transform:capitalize">${e.riesgo}</div></div>
+    </div>`;
+
+  const hechos = S.historial.slice(-7);
+  $("#tarjetaTamizajes").innerHTML = hechos.length
+    ? `<h3>Últimos ${hechos.length}</h3><p>` + hechos.map(h =>
+        `${new Date(h.cuando).getDate()}/${new Date(h.cuando).getMonth()+1} — <b style="color:${
+          h.estado==="estable"?"var(--menta)":h.estado==="grave"?"var(--ambar)":"var(--coral)"}">${h.estado}</b> (${h.anc}/µL)`
+      ).join(" · ") + "</p>"
+    : `<h3>Todavía ninguno</h3><p>Toca el botón del dedito y Michi hace el primero. Toma un minuto.</p>`;
+
+  $("#franjaHorario").innerHTML = `Michi maúlla después de las <b>${S.jornadaFin}</b>, cuando ya estás en casa.`;
+}
+
+function pintarLecciones(){
+  $("#listaLecciones").innerHTML = LECCIONES.map(l => {
+    const ok = !!S.lecciones[l.id];
+    return `<button class="leccion ${ok?"completa":""}" data-lec="${l.id}">
+      <div class="emo">${l.emo}</div>
+      <div class="cont"><b>${l.titulo}</b><span>${l.resumen}</span></div>
+      <div class="estado">${ok?"✅":`<span style="color:var(--ambar);font-size:12px;font-weight:900">+${l.premio}🐟</span>`}</div>
+    </button>`;
+  }).join("");
+  $$("[data-lec]").forEach(b => b.onclick = () => abrirLeccion(b.dataset.lec));
+  $("#senalesAlarma").innerHTML = SENALES;
+}
+
+function pintarPremios(){
+  $("#tienda").innerHTML = PRENDAS.map(p => {
+    const tiene = S.prendas.includes(p.id);
+    const puesta = S.prenda === p.id;
+    return `<button class="prenda ${puesta?"puesta":""} ${tiene?"":"bloqueada"}" data-prenda="${p.id}">
+      <span class="em">${p.em}</span><span class="nm">${p.nombre}</span>
+      <span class="pr">${tiene ? (puesta?"puesto":"tocar") : p.precio+" 🐟"}</span></button>`;
+  }).join("");
+  $$("[data-prenda]").forEach(b => b.onclick = () => {
+    const p = PRENDAS.find(x => x.id === b.dataset.prenda);
+    if(S.prendas.includes(p.id)){
+      S.prenda = S.prenda === p.id ? null : p.id;
+      tono(660, .16, .1); vibrar(15);
+    } else if(S.monedas >= p.precio){
+      S.monedas -= p.precio; S.prendas.push(p.id); S.prenda = p.id;
+      premiar(0, p.em, "¡" + p.nombre + " desbloqueado!");
+    } else {
+      decir("Te faltan " + (p.precio - S.monedas) + " pescaditos 🐟", 2600);
+      tono(220, .2, .1, "square"); irA("michi"); return;
+    }
+    guardar(); pintarPremios(); pintarAccesorio(); pintarBarras();
+  });
+
+  $("#listaLogros").innerHTML = LOGROS.map(l =>
+    `<div class="logro ${S.logros[l.id]?"on":""}">
+      <div class="med">${S.logros[l.id]?l.med:"🔒"}</div>
+      <div><b>${l.titulo}</b><span>${l.texto}</span></div></div>`).join("");
+
+  const total = S.historial.length;
+  const estables = S.historial.filter(h => h.estado === "estable").length;
+  $("#tarjetaMichi").innerHTML = `<h3>${S.nombreMichi}</h3>
+    <p>Serie MC-DEMO01 · vinculado al INSN San Borja.</p>
+    <div class="datos">
+      <div class="dato"><div class="k">Tamizajes</div><div class="v">${total}</div></div>
+      <div class="dato"><div class="k">Estables</div><div class="v">${estables}</div></div>
+      <div class="dato"><div class="k">Racha</div><div class="v">${S.racha} d</div></div>
+      <div class="dato"><div class="k">Lecciones</div><div class="v">${Object.keys(S.lecciones).length}/${LECCIONES.length}</div></div>
+    </div>
+    <div class="nota">Cada tamizaje sale del michi al INSN San Borja. Si el michi deja de
+      comunicarse tres días, el hospital lo nota y llama. El silencio también es una señal.</div>`;
+}
+
+function pintarAccesorio(){
+  const g = $("#accesorio");
+  const mapa = {
+    gorro:'<path d="M104 60 L196 60 L186 24 L114 24 Z" fill="#2E1657"/><rect x="96" y="56" width="108" height="12" rx="6" fill="#A855F7"/>',
+    lazo:'<path d="M188 66 L212 50 L212 84 Z" fill="#FF6BB5"/><path d="M232 66 L208 50 L208 84 Z" fill="#FF6BB5"/><circle cx="210" cy="67" r="8" fill="#F472B6"/>',
+    lentes:'<rect x="92" y="108" width="52" height="42" rx="14" fill="#0B0518" opacity=".82"/><rect x="156" y="108" width="52" height="42" rx="14" fill="#0B0518" opacity=".82"/><rect x="142" y="124" width="18" height="6" fill="#0B0518" opacity=".82"/>',
+    corona:'<path d="M108 58 L120 26 L136 48 L150 20 L164 48 L180 26 L192 58 Z" fill="#FBBF24"/><circle cx="150" cy="38" r="6" fill="#FF6BB5"/>',
+    bufanda:'<path d="M96 196 Q150 224 204 196 L204 214 Q150 240 96 214 Z" fill="#22D3EE"/><path d="M196 210 L216 258 L192 254 L182 214 Z" fill="#0EA5E9"/>',
+    medico:'<circle cx="206" cy="238" r="14" fill="none" stroke="#E9E2FF" stroke-width="5"/><path d="M206 224 C206 196 176 200 176 216" fill="none" stroke="#E9E2FF" stroke-width="5" stroke-linecap="round"/>'
+  };
+  g.innerHTML = S.prenda ? (mapa[S.prenda] || "") : "";
+}
+
+function abrirLeccion(id){
+  const l = LECCIONES.find(x => x.id === id);
+  let paso = 0;
+  const render = () => {
+    modalHTML(`
+      <div style="text-align:center;font-size:46px;margin-bottom:4px">${l.emo}</div>
+      <h2 style="text-align:center">${l.titulo}</h2>
+      <div style="display:flex;gap:5px;justify-content:center;margin:10px 0 16px">
+        ${l.cuerpo.map((_, i) => `<span style="width:${i===paso?22:7}px;height:7px;border-radius:99px;
+          background:${i<=paso?"var(--morado-vivo)":"var(--borde)"};transition:.25s"></span>`).join("")}
+      </div>
+      <p style="font-size:15px;color:var(--texto);min-height:104px">${l.cuerpo[paso]}</p>
+      <button class="btn" id="sig">${paso < l.cuerpo.length-1 ? "Siguiente" : (S.lecciones[l.id]?"Cerrar":"¡Aprendido! +"+l.premio+" 🐟")}</button>
+      ${paso>0?'<button class="btn fantasma" id="ant">Atrás</button>':''}
+    `);
+    $("#sig").onclick = () => {
+      if(paso < l.cuerpo.length - 1){ paso++; tono(760, .1, .08); render(); }
+      else {
+        if(!S.lecciones[l.id]){
+          S.lecciones[l.id] = true;
+          S.animo = limitar(S.animo + 6, 0, 100);
+          cerrarModal();
+          premiar(l.premio, "🎓", "¡Lección aprendida!");
+          if(Object.keys(S.lecciones).length >= LECCIONES.length) darLogro("sabio");
+        } else cerrarModal();
+        pintarLecciones();
+      }
+    };
+    if($("#ant")) $("#ant").onclick = () => { paso--; render(); };
+  };
+  render();
+}
+
+function modalHTML(html){
+  $("#modal").innerHTML = '<div class="asa"></div>' + html;
+  $("#velo").classList.add("on");
+}
+function cerrarModal(){ $("#velo").classList.remove("on"); }
+$("#velo").addEventListener("click", e => { if(e.target === $("#velo")) cerrarModal(); });
+
+const cv = $("#confeti");
+const cx2d = cv.getContext("2d");
+let piezas = [], animando = false;
+function confeti(){
+  cv.width = innerWidth; cv.height = innerHeight;
+  cv.classList.add("on");
+  const colores = ["#A855F7","#22D3EE","#FF6BB5","#FBBF24","#34D399","#C4B5FD"];
+  piezas = Array.from({length: 90}, () => ({
+    x: Math.random()*cv.width, y: -20 - Math.random()*cv.height*0.4,
+    w: 5+Math.random()*7, h: 8+Math.random()*10,
+    vy: 2.4+Math.random()*3.4, vx: (Math.random()-.5)*2.4,
+    r: Math.random()*Math.PI, vr: (Math.random()-.5)*0.26,
+    c: colores[(Math.random()*colores.length)|0]
+  }));
+  if(!animando){ animando = true; requestAnimationFrame(pasoConfeti); }
+}
+function pasoConfeti(){
+  cx2d.clearRect(0,0,cv.width,cv.height);
+  piezas = piezas.filter(p => p.y < cv.height + 40);
+  piezas.forEach(p => {
+    p.y += p.vy; p.x += p.vx; p.r += p.vr;
+    cx2d.save(); cx2d.translate(p.x, p.y); cx2d.rotate(p.r);
+    cx2d.fillStyle = p.c; cx2d.fillRect(-p.w/2, -p.h/2, p.w, p.h); cx2d.restore();
+  });
+  if(piezas.length) requestAnimationFrame(pasoConfeti);
+  else { animando = false; cv.classList.remove("on"); }
+}
+
+function premiar(monedas, icono, texto){
+  if(monedas){ S.monedas += monedas; }
+  $("#premioIcono").textContent = icono;
+  $("#premioTexto").textContent = texto + (monedas ? `  +${monedas} 🐟` : "");
+  $("#premio").classList.add("on");
+  confeti(); campanita(); vibrar([25,60,25]);
+  cara("feliz", 2600); gesto("saltando", 600);
+  setTimeout(() => $("#premio").classList.remove("on"), 2000);
+  guardar(); pintarBarras(); pintarPremios();
+}
+function darLogro(id){
+  if(S.logros[id]) return;
+  S.logros[id] = true;
+  const l = LOGROS.find(x => x.id === id);
+  setTimeout(() => premiar(30, l.med, l.titulo), 900);
+}
+
+const ACCIONES = {
+  alimentar(){
+    if(S.monedas < 5){ decir("No hay pescaditos. Gana con una lección 🎓", 2800); return; }
+    S.monedas -= 5; S.energia = limitar(S.energia + 16, 0, 100); S.animo = limitar(S.animo + 4, 0, 100);
+    lanzarCorazones("🐟", 4); maullido({tono: 470, dur: .5}); cara("feliz", 1800);
+    decir("¡Ñam! Gracias 🐟", 2000); vibrar(20);
+  },
+  jugar(){
+    if(S.energia < 12){ decir("Estoy muy cansado… déjame dormir 🌙", 2600); cara("dormido", 2000); return; }
+    S.energia = limitar(S.energia - 9, 0, 100); S.animo = limitar(S.animo + 15, 0, 100);
+    gesto("saltando", 620); lanzarCorazones("⭐", 5); maullido({tono: 640, dur: .48});
+    decir("¡Otra vez, otra vez!", 2000); vibrar([15,40,15]);
+  },
+  mimar(){
+    S.animo = limitar(S.animo + 9, 0, 100);
+    lanzarCorazones("💜", 6); cara("amor", 2400); ronroneo(2.2);
+    decir("Prrrrr… 💜", 2400); vibrar([12,30,12,30,12]);
+    if(S.animo >= 100) darLogro("cuidador");
+  },
+  dormir(){
+    S.energia = limitar(S.energia + 26, 0, 100);
+    cara("dormido", 3000); decir("Zzz… zzz…", 3000); ronroneo(3);
+  },
+  tamizaje(){ abrirTamizaje(); }
+};
+
+$$("[data-accion]").forEach(b => b.onclick = () => {
+  audio();
+  ACCIONES[b.dataset.accion]();
+  guardar(); pintarBarras();
+});
+
+let sesion = null;
+let SEGUNDOS_DEMO = 8;
+
+function abrirTamizaje(automatico){
+  modalHTML(`
+    <h2>El dedito de ${S.nombreMichi}</h2>
+    <p>Pon el dedo índice sobre la nariz de Michi y no lo muevas. Michi mira la
+    sangre que pasa por tus capilares y cuenta las defensas.</p>
+    <div class="sensor-zona">
+      <svg class="sensor-anillo" viewBox="0 0 200 200">
+        <circle class="fondo-c" cx="100" cy="100" r="88"/>
+        <circle class="prog" id="anilloProg" cx="100" cy="100" r="88"
+          stroke-dasharray="553" stroke-dashoffset="553"/>
+      </svg>
+      <div class="huella" id="huella">🫆</div>
+    </div>
+    <div class="cuenta" id="cuenta">Mantén el dedo apoyado</div>
+    <button class="btn fantasma" id="cancelar">Ahora no</button>
+  `);
+  const h = $("#huella"), anillo = $("#anilloProg"), texto = $("#cuenta");
+  let t0 = null, avance = 0, ron = null, reloj = null;
+
+  const arrancar = () => {
+    audio();
+    h.classList.add("activa"); gato.classList.add("escaneando");
+    cara("feliz"); decir("No te muevas… te estoy mirando 💜", 3000);
+    ron = ronroneo(SEGUNDOS_DEMO + 1); vibrar(25);
+    t0 = performance.now() - avance * SEGUNDOS_DEMO * 1000;
+    reloj = requestAnimationFrame(tic);
+  };
+  const parar = () => {
+    h.classList.remove("activa"); gato.classList.remove("escaneando");
+    if(ron) ron.detener();
+    cancelAnimationFrame(reloj);
+    if(avance < 1){
+      texto.textContent = "Se movió el dedito. Vuelve a apoyarlo.";
+      maullido({tono: 430, dur: .6, tristeza: .5}); cara("triste", 1600);
+    }
+  };
+  const tic = ahora => {
+    avance = limitar((ahora - t0) / (SEGUNDOS_DEMO * 1000), 0, 1);
+    anillo.style.strokeDashoffset = 553 * (1 - avance);
+    const resta = Math.ceil(SEGUNDOS_DEMO * (1 - avance));
+    texto.textContent = avance < 1 ? `Midiendo… ${resta} s` : "¡Listo!";
+    if(avance < 1) reloj = requestAnimationFrame(tic);
+    else { parar(); analizar(); }
+  };
+
+  h.addEventListener("pointerdown", e => { e.preventDefault(); arrancar(); });
+  ["pointerup","pointercancel","pointerleave"].forEach(ev =>
+    h.addEventListener(ev, () => { if(avance < 1) parar(); }));
+
+  if(automatico) setTimeout(arrancar, 500);
+
+  $("#cancelar").onclick = () => {
+    parar(); cerrarModal();
+    S.postergaciones++;
+    S.animo = limitar(S.animo - 8, 0, 100);
+    guardar(); pintarBarras();
+    setTimeout(() => {
+      maullido({tono: 420, dur: .8, tristeza: .7});
+      cara("triste", 3000);
+      decir(S.postergaciones >= 2
+        ? "Ya van " + S.postergaciones + " veces… voy a avisarle al hospital."
+        : "Bueno… pero no te olvides de mí.", 3600);
+      if(S.postergaciones >= 3) avisoDeSistema();
+    }, 500);
+  };
+}
+
+function analizar(){
+  modalHTML(`
+    <h2>Michi está pensando…</h2>
+    <p>Estabilizando la imagen, midiendo la velocidad de la sangre y contando
+    los huecos ópticos que dejan las células blancas al pasar.</p>
+    <div class="sensor-zona"><div class="huella activa" style="font-size:44px">🔬</div></div>
+    <div class="cuenta" id="pasos">Estabilizando…</div>
+  `);
+  const pasos = ["Estabilizando la imagen…", "Encontrando los capilares…",
+    "Midiendo la velocidad del flujo…", "Contando huecos ópticos…", "Estimando defensas…"];
+  let i = 0;
+  const id = setInterval(() => {
+    i++; tono(520 + i * 90, .1, .07);
+    if(i < pasos.length) $("#pasos").textContent = pasos[i];
+    else { clearInterval(id); mostrarResultado(simular()); }
+  }, 620);
+}
+
+let estadoForzado = null;
+
+function simular(){
+  const r = estadoForzado === "grave" ? 0.8
+          : estadoForzado === "priorizable" ? 0.98
+          : estadoForzado === "estable" ? 0.1
+          : Math.random();
+  estadoForzado = null;
+  let anc, estado;
+  if(r < 0.72){ anc = 900 + Math.random() * 900; estado = "estable"; }
+  else if(r < 0.93){ anc = 260 + Math.random() * 320; estado = "grave"; }
+  else { anc = 90 + Math.random() * 220; estado = "priorizable"; }
+  const eventos = Math.round(anc / 12 + 8 + Math.random() * 14);
+  return {
+    anc: Math.round(anc), estado,
+    ic: [Math.round(anc * 0.42), Math.round(anc * 2.4)],
+    capilares: 6 + Math.round(Math.random() * 5),
+    eventos,
+    cuando: new Date().toISOString()
+  };
+}
+
+const TEXTOS_ESTADO = {
+  estable: {emblema:"😺", titulo:"Todo en orden",
+    frase:"Michi no encontró nada raro. Sigan con el calendario de siempre.",
+    nota:"Un tamizaje bueno no reemplaza el hemograma del control. Si aparece fiebre de 38 °C, esto ya no vale: hay que ir igual.",
+    conducta:"Basta con el recordatorio de audio."},
+  grave: {emblema:"🙀", titulo:"Hay que avisar hoy",
+    frase:"Michi vio menos defensas de las esperadas. Se abrió una teleconsulta con el médico asignado.",
+    nota:"No es una emergencia todavía, pero no espera a mañana. El hematólogo del INSN va a responder hoy mismo.",
+    conducta:"Teleconsulta con el médico asignado."},
+  priorizable: {emblema:"🚨", titulo:"Atención prioritaria",
+    frase:"Michi vio muy pocas defensas. El INSN ya fue avisado y va a llamar.",
+    nota:"Si además hay fiebre de 38 °C o más, vayan a emergencias ahora mismo, sin esperar la llamada. El antibiótico debe entrar en la primera hora.",
+    conducta:"Teleconsulta con opción de ingreso por emergencia."}
+};
+
+function mostrarResultado(r){
+  const t = TEXTOS_ESTADO[r.estado];
+  S.historial.push(r);
+  const hoy = new Date().toISOString().slice(0,10);
+  const ayer = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  const ultimo = S.ultimoTamizaje ? S.ultimoTamizaje.slice(0,10) : null;
+  if(ultimo !== hoy) S.racha = (ultimo === ayer || ultimo === null) ? S.racha + 1 : 1;
+  S.ultimoTamizaje = r.cuando;
+  S.postergaciones = 0;
+  S.salud = limitar(r.estado === "estable" ? S.salud + 6 : S.salud - 4, 0, 100);
+  S.animo = limitar(S.animo + 10, 0, 100);
+  guardar();
+
+  modalHTML(`
+    <div class="resultado ${r.estado}">
+      <div class="emblema">${t.emblema}</div>
+      <div class="titulo">${t.titulo}</div>
+      <p style="color:var(--texto);font-size:14.5px">${t.frase}</p>
+    </div>
+    <div class="datos">
+      <div class="dato"><div class="k">Defensas estimadas</div><div class="v">${r.anc}<span style="font-size:11px;color:var(--texto-tenue)"> /µL</span></div></div>
+      <div class="dato"><div class="k">Rango probable</div><div class="v" style="font-size:14px">${r.ic[0]}–${r.ic[1]}</div></div>
+      <div class="dato"><div class="k">Capilares leídos</div><div class="v">${r.capilares}</div></div>
+      <div class="dato"><div class="k">Huecos contados</div><div class="v">${r.eventos}</div></div>
+    </div>
+    <div class="franja ${r.estado==="estable"?"ok":"alerta"}">
+      <span class="e">${r.estado==="estable"?"✅":"📞"}</span><span>${t.conducta}</span></div>
+    <div class="nota">${t.nota}</div>
+    ${r.estado!=="estable"?'<button class="btn '+(r.estado==="priorizable"?"peligro":"")+'" id="tele">Abrir teleconsulta ahora</button>':''}
+    <button class="btn ${r.estado==="estable"?"":"fantasma"}" id="listo">Entendido</button>
+  `);
+
+  if(r.estado === "estable"){
+    maullido({tono: 660, dur: .55});
+    setTimeout(() => { confeti(); campanita(); }, 200);
+  } else {
+    maullido({tono: 400, dur: .9, tristeza: .6});
+    cara("triste"); vibrar([90,70,90,70,180]);
+    setTimeout(() => maullido({tono: 380, dur: .9, tristeza: .8}), 1000);
+  }
+
+  $("#listo").onclick = () => {
+    cerrarModal();
+    const bono = r.estado === "estable" ? 25 : 15;
+    premiar(bono, "🐟", "¡Gracias por cuidarme!");
+    if(S.historial.length === 1) darLogro("primer");
+    if(S.racha >= 3) darLogro("racha3");
+    if(S.racha >= 7) darLogro("racha7");
+    if(S.racha >= 30) darLogro("racha30");
+    pintarAgenda(); pintarPremios();
+  };
+  if($("#tele")) $("#tele").onclick = () => abrirTeleconsulta(r);
+}
+
+function abrirTeleconsulta(r){
+  const urgente = r.estado === "priorizable";
+  modalHTML(`
+    <h2>${urgente ? "Teleconsulta prioritaria" : "Teleconsulta"}</h2>
+    <p>El paquete ya salió al INSN San Borja con el resultado del tamizaje,
+    la etapa del tratamiento y los datos de contacto.</p>
+    <div class="franja ${urgente?"alerta":"info"}">
+      <span class="e">${urgente?"🚑":"👩‍⚕️"}</span>
+      <span>${urgente
+        ? "Prioridad alta. Además de la teleconsulta se habilitó el ingreso por emergencia."
+        : "El médico asignado responde el mismo día."}</span></div>
+    <div class="datos">
+      <div class="dato"><div class="k">Solicitud</div><div class="v" style="font-size:13px">TIC-${Math.random().toString(36).slice(2,8).toUpperCase()}</div></div>
+      <div class="dato"><div class="k">Respuesta en</div><div class="v" style="font-size:14px">${urgente?"< 15 min":"< 6 h"}</div></div>
+    </div>
+    <p style="font-size:13px">¿Pueden viajar a Lima si el médico lo indica?</p>
+    <button class="btn menta" id="siLima">Sí, podemos ir</button>
+    <button class="btn fantasma" id="noLima">No podemos viajar a Lima</button>
+  `);
+  $("#siLima").onclick = () => {
+    cerrarModal();
+    decir("El doctor los va a llamar. Yo me quedo con ustedes 💜", 4200);
+    maullido({tono: 560, dur: .5});
+  };
+  $("#noLima").onclick = () => mostrarReferencia(r);
+}
+
+const RED_DEMO = [
+  {dep:"Loreto", n:"Hospital Regional de Loreto Felipe Santiago Arriola", c:"Iquitos", h:2},
+  {dep:"Junín", n:"Hospital Regional Docente Materno Infantil El Carmen", c:"Huancayo", h:1.5},
+  {dep:"La Libertad", n:"Hospital Belén de Trujillo", c:"Trujillo", h:1},
+  {dep:"Cusco", n:"Hospital Regional del Cusco", c:"Cusco", h:1},
+  {dep:"Arequipa", n:"IREN Sur", c:"Arequipa", h:1},
+  {dep:"Amazonas", n:"Hospital Regional Virgen de Fátima", c:"Chachapoyas", h:3}
+];
+
+function mostrarReferencia(r){
+  const centro = RED_DEMO[(Math.random() * RED_DEMO.length) | 0];
+  modalHTML(`
+    <h2>Referencia generada</h2>
+    <p>No hace falta viajar a Lima. La teleconsulta emitió una referencia al
+    establecimiento capaz más cercano a su domicilio.</p>
+    <div class="tarjeta" style="margin:12px 0">
+      <h3>${centro.n}</h3>
+      <p>${centro.c}, ${centro.dep} · a unas ${centro.h} h de casa</p>
+    </div>
+    <div class="franja ok"><span class="e">🚌</span>
+      <span>Se evitan aproximadamente <b>${(18 - centro.h * 2).toFixed(0)} horas</b> de viaje ida y vuelta a Lima.</span></div>
+    <div class="nota">Este establecimiento resuelve la urgencia (hemograma, antibiótico,
+      transfusión, hospitalización), pero <b>no reemplaza al centro oncológico</b>.
+      El hematólogo del INSN San Borja sigue conduciendo el caso por teleconsulta y
+      la contrarreferencia es obligatoria.</div>
+    <button class="btn menta" id="ok">Entendido</button>
+  `);
+  $("#ok").onclick = () => {
+    cerrarModal();
+    premiar(0, "🏥", "Referencia enviada");
+    decir("Ya está. No tienen que ir hasta Lima 💜", 4200);
+  };
+}
+
+function avisoDeSistema(){
+  setTimeout(() => {
+    notificar("El hospital fue avisado",
+      "Michi no recibió tu dedito en 3 recordatorios. El INSN San Borja va a llamar.", "🏥");
+  }, 1400);
+}
+
+let registroSW = null;
+let iconoNotificacion = null;
+
+if("serviceWorker" in navigator && location.protocol !== "file:"){
+  navigator.serviceWorker.register("sw.js")
+    .then(reg => { registroSW = reg; })
+    .catch(() => {});
+  navigator.serviceWorker.addEventListener("message", evento => {
+    if(evento.data && evento.data.tipo === "notificacion"){
+      if(evento.data.accion === "abrir") abrirTamizaje();
+      else { S.postergaciones++; guardar(); maullido({tono: 420, dur: .8, tristeza: .7}); }
+    }
+  });
+}
+
+function iconoDelMichi(){
+  if(iconoNotificacion) return iconoNotificacion;
+  const c = document.createElement("canvas");
+  c.width = c.height = 192;
+  const g = c.getContext("2d");
+  g.fillStyle = "#160A2A"; g.fillRect(0, 0, 192, 192);
+  const oreja = (x, dir) => {
+    g.beginPath(); g.moveTo(x, 62); g.lineTo(x + dir * 6, 26);
+    g.lineTo(x + dir * 36, 46); g.closePath();
+    g.fillStyle = "#A79FC0"; g.fill();
+  };
+  oreja(52, -1); oreja(140, 1);
+  g.beginPath(); g.ellipse(96, 102, 58, 50, 0, 0, 7);
+  g.fillStyle = "#DCD6E8"; g.fill();
+  g.fillStyle = "#1B1030";
+  g.beginPath(); g.roundRect(58, 84, 76, 34, 17); g.fill();
+  g.fillStyle = "#22D3EE";
+  g.beginPath(); g.ellipse(78, 101, 11, 12, 0, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(114, 101, 11, 12, 0, 0, 7); g.fill();
+  g.fillStyle = "#A855F7";
+  g.beginPath(); g.moveTo(88, 126); g.lineTo(104, 126); g.lineTo(96, 138); g.closePath(); g.fill();
+  iconoNotificacion = c.toDataURL("image/png");
+  return iconoNotificacion;
+}
+
+async function pedirPermisoDeNotificaciones(){
+  if(!("Notification" in window)) return false;
+  if(Notification.permission === "granted") return true;
+  if(Notification.permission === "denied") return false;
+  try { return (await Notification.requestPermission()) === "granted"; }
+  catch(e){ return false; }
+}
+
+function notificacionDelSistema(titulo, cuerpo, exigeTamizaje){
+  if(!("Notification" in window) || Notification.permission !== "granted") return false;
+  const opciones = {
+    body: cuerpo, icon: iconoDelMichi(), badge: iconoDelMichi(),
+    tag: "michicheck", renotify: true, vibrate: [90, 60, 90, 60, 180],
+    data: {url: location.href}
+  };
+  try{
+    if(registroSW && registroSW.showNotification){
+      if(exigeTamizaje) opciones.actions = [
+        {action: "abrir", title: "Poner el dedito"},
+        {action: "despues", title: "Después"}];
+      registroSW.showNotification(titulo, opciones);
+    } else {
+      const n = new Notification(titulo, opciones);
+      n.onclick = () => { window.focus(); n.close(); };
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+let temporizadorAviso = null;
+function notificar(titulo, cuerpo, icono, exigeTamizaje){
+  $("#avisoTitulo").textContent = titulo;
+  $("#avisoCuerpo").textContent = cuerpo;
+  $("#avisoHora").textContent = new Date().toLocaleTimeString("es-PE",
+    {hour: "2-digit", minute: "2-digit"});
+  $(".aviso-yape .ico").textContent = icono || "🐱";
+  $("#avisoYape").classList.add("on");
+  campanita();
+  setTimeout(() => maullido({tono: 580, dur: .55}), 260);
+  vibrar([40, 60, 40]);
+  notificacionDelSistema(titulo, cuerpo, exigeTamizaje);
+  clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(() => $("#avisoYape").classList.remove("on"), 7000);
+}
+$("#avisoYape").onclick = () => {
+  $("#avisoYape").classList.remove("on");
+  irA("agenda");
+};
+
+function irA(vista){
+  $$(".vista").forEach(v => v.classList.toggle("on", v.dataset.vista === vista));
+  $$("nav button").forEach(b => b.classList.toggle("on", b.dataset.ir === vista));
+  tono(700, .09, .06);
+  if(vista === "agenda") pintarAgenda();
+  if(vista === "aprender") pintarLecciones();
+  if(vista === "premios") pintarPremios();
+}
+$$("nav button").forEach(b => b.onclick = () => { audio(); irA(b.dataset.ir); });
+
+setInterval(() => {
+  S.energia = limitar(S.energia - 0.5, 0, 100);
+  S.animo = limitar(S.animo - 0.4, 0, 100);
+  pintarBarras(); guardar();
+  if(S.animo < 25 && Math.random() < 0.4){
+    maullido({tono: 430, dur: .75, tristeza: .6});
+    decir("Me siento solito…", 3000); cara("triste", 3000);
+  }
+}, 26000);
+
+const estrellas = $("#estrellas");
+for(let i = 0; i < 34; i++){
+  const e = document.createElement("i");
+  e.style.left = Math.random() * 100 + "%";
+  e.style.top = Math.random() * 62 + "%";
+  e.style.animationDelay = (Math.random() * 3) + "s";
+  estrellas.appendChild(e);
+}
+
+function bienvenida(){
+  modalHTML(`
+    <div style="text-align:center;font-size:56px">🐱</div>
+    <h2 style="text-align:center">Hola, soy tu michi</h2>
+    <p style="text-align:center">Te voy a acompañar durante todo el tratamiento.
+    Te recuerdo tus controles, te enseño cosas y cuido tus defensas.
+    <b>¿Cómo me quieres llamar?</b></p>
+    <input id="nombreInput" maxlength="14" placeholder="Michi"
+      style="width:100%;padding:15px;border-radius:16px;border:1px solid var(--borde);
+      background:rgba(0,0,0,.32);color:var(--texto);font-size:17px;font-weight:800;
+      text-align:center;font-family:inherit;outline:none">
+    <div style="margin:14px 0 4px;font-size:12.5px;color:var(--texto-tenue)">
+      ¿A qué hora sales de trabajar? Voy a maullar después de esa hora.</div>
+    <input id="horaInput" type="time" value="${S.jornadaFin}"
+      style="width:100%;padding:14px;border-radius:16px;border:1px solid var(--borde);
+      background:rgba(0,0,0,.32);color:var(--texto);font-size:16px;font-weight:800;
+      text-align:center;font-family:inherit;outline:none">
+    <button class="btn" id="empezar">¡Vamos!</button>
+  `);
+  $("#empezar").onclick = () => {
+    const n = $("#nombreInput").value.trim();
+    S.nombreMichi = n || "Michi";
+    S.jornadaFin = $("#horaInput").value || "18:00";
+    S.visto = true; guardar(); cerrarModal();
+    maullido({tono: 620, dur: .6});
+    setTimeout(() => { confeti(); decir("¡Miau! Encantado 💜", 3200); cara("amor", 2600); }, 300);
+    setTimeout(() => notificar("Recordatorio de control",
+      "Control con Hematología en 2 días. Michi te avisa de nuevo esa mañana.", "📅"), 4200);
+    pintarTodo();
+  };
+}
+
+function pintarTodo(){
+  pintarBarras(); pintarAgenda(); pintarLecciones(); pintarPremios(); pintarAccesorio();
+}
+
+pintarTodo();
+if(!S.visto) setTimeout(bienvenida, 500);
+else setTimeout(() => {
+  decir("¡Volviste! Te extrañé 💜", 3000); cara("feliz", 2400);
+  if(tamizajePendiente()) setTimeout(() => notificar("Michi te está llamando",
+    "Toca ponerte el dedito. Es un minuto y cuida tus defensas.", "🫆"), 3000);
+}, 700);
+
+const PASOS = [
+  {t: "Este es el <b>michi digital</b>. El mismo gato que el niño se lleva a casa, en su celular. Respira, parpadea y sigue lo que pasa en la pantalla.",
+   ms: 4200, ir: "michi", accion(){ cara("feliz", 3000); decir("¡Hola! Soy tu michi 💜", 3500); foco("#gato"); }},
+
+  {t: "El niño lo toca y el gato responde: <b>maúlla, salta y pide más</b>. Todo el audio está sintetizado dentro de la app, sin archivos ni internet.",
+   ms: 3800, accion(){ gato.click(); setTimeout(() => gato.click(), 1200); setTimeout(() => gato.click(), 2400); }},
+
+  {t: "Lo cuida como a un Pou: <b>comer, jugar, mimar y dormir</b>. Cada cuidado sube su ánimo. El ronroneo es ruido modulado a 26 hercios, como el de un gato real.",
+   ms: 5200, accion(){
+     foco("[data-accion='mimar']");
+     setTimeout(() => { ACCIONES.mimar(); pintarBarras(); }, 400);
+     setTimeout(() => { foco("[data-accion='alimentar']"); ACCIONES.alimentar(); pintarBarras(); }, 2600);
+   }},
+
+  {t: "Aquí está el <b>rol educativo</b>. Seis lecciones que hoy nadie le explica a la familia.",
+   ms: 3400, ir: "aprender", accion(){ foco("[data-lec='mp6']"); }},
+
+  {t: "<b>Las tres reglas de la 6-MP</b>: de noche, sin leche, siempre igual. Tomar menos del 95 % de las dosis multiplica por 2.7 el riesgo de recaída.",
+   ms: 6800, accion(){
+     quitarFoco(); abrirLeccion("mp6");
+     setTimeout(() => { const b = $("#sig"); if(b) b.click(); }, 2000);
+     setTimeout(() => { const b = $("#sig"); if(b) b.click(); }, 4000);
+   }},
+
+  {t: "La familia gana pescaditos, rachas, ropita y logros. Para el niño es un juego. <b>Para el sistema es adherencia.</b>",
+   ms: 5000, ir: "premios", accion(){
+     cerrarModal();
+     S.monedas = Math.max(S.monedas, 220); guardar(); pintarPremios(); pintarBarras();
+     foco("[data-prenda='lazo']");
+     setTimeout(() => { const b = $("[data-prenda='lazo']"); if(b) b.click(); }, 1100);
+     setTimeout(() => { foco("[data-prenda='corona']");
+       const b = $("[data-prenda='corona']"); if(b) b.click(); }, 2900);
+   }},
+
+  {t: "<b>Primera alerta: la de la app.</b> Suena como el «yape» — campanita más un miau. Trae el recordatorio de la cita. Es una <b>notificación push real</b> del sistema operativo.",
+   ms: 6000, ir: "michi", accion(){
+     quitarFoco();
+     notificar("Recordatorio de control",
+       "Mañana 9:00 a. m. — Control con Hematología, INSN San Borja.", "📅");
+   }},
+
+  {t: "Y esta es la de la <b>medicación</b>. Sale a las 9 de la noche, todos los días del mantenimiento.",
+   ms: 5000, accion(){
+     notificar("Hora de la 6-MP",
+       "Recuerda: de noche, sin leche, y siempre de la misma forma.", "💊");
+   }},
+
+  {t: "<b>Segunda alerta: la del juguete.</b> El gato maúlla en la sala pidiendo el dedito. Suena <b>después del horario de trabajo del papá</b>, no a media mañana.",
+   ms: 5600, accion(){
+     notificar("Michi te está llamando",
+       "Toca ponerte el dedito. Es un minuto y cuida tus defensas.", "🫆", true);
+     setTimeout(() => { maullido({tono: 500, dur: .9}); cara("triste", 2000);
+       decir("Miaaau… ponme el dedito 🥺", 3600); }, 1600);
+     setTimeout(() => maullido({tono: 470, dur: .95}), 3000);
+   }},
+
+  {t: "El niño apoya el dedo en la nariz del gato. <b>El gato ronronea mientras mide</b>, para que no lo retire. En el aparato real son 60 segundos.",
+   ms: 7000, accion(){
+     quitarFoco(); SEGUNDOS_DEMO = 4; estadoForzado = "grave";
+     $("#avisoYape").classList.remove("on");
+     abrirTamizaje(true);
+   }},
+
+  {t: "Resultado: <b>grave</b>. El gato vio menos defensas de las esperadas. No es emergencia todavía, pero no espera a mañana: se abrió teleconsulta con el médico asignado.",
+   ms: 6000, accion(){ SEGUNDOS_DEMO = 8; }},
+
+  {t: "Aquí está la pieza que cambia el abandono: <b>«no podemos viajar a Lima»</b> tiene respuesta.",
+   ms: 4000, accion(){ const b = $("#tele"); if(b){ b.click(); setTimeout(() => foco("#noLima"), 700); } }},
+
+  {t: "El sistema <b>no dice «venga a Lima»</b>. Emite la referencia al establecimiento capaz más cercano y calcula cuántas horas de viaje evita.",
+   ms: 6500, accion(){ quitarFoco(); const b = $("#noLima"); if(b) b.click(); }},
+
+  {t: "Y en la agenda queda todo: las citas, la <b>etapa del tratamiento</b> y los tamizajes de la semana. El mantenimiento dura dos años y es donde ocurre casi todo el abandono.",
+   ms: 6000, ir: "agenda", accion(){ cerrarModal(); quitarFoco(); }},
+
+  {t: "Eso es el michi. <b>No mandamos otro recordatorio: mandamos un gato.</b>",
+   ms: 5000, ir: "michi", accion(){ cara("amor", 4000); lanzarCorazones("💜", 8);
+     decir("¡Gracias por cuidarme! 💜", 4000); ronroneo(3); }}
+];
+
+let tourIndice = 0, tourReloj = null, tourActivo = false, tourPausado = false;
+
+function foco(selector){
+  const el = $(selector);
+  const caja = $("#foco");
+  if(!el){ caja.classList.remove("on"); return; }
+  const r = el.getBoundingClientRect();
+  caja.style.left = (r.left - 6) + "px";
+  caja.style.top = (r.top - 6) + "px";
+  caja.style.width = (r.width + 12) + "px";
+  caja.style.height = (r.height + 12) + "px";
+  caja.classList.add("on");
+}
+function quitarFoco(){ $("#foco").classList.remove("on"); }
+
+function pintarTour(){
+  const paso = PASOS[tourIndice];
+  $("#tourPaso").textContent = `${tourIndice + 1} / ${PASOS.length}`;
+  $("#tourBarra").style.width = ((tourIndice + 1) / PASOS.length * 100) + "%";
+  $("#tourTexto").innerHTML = paso.t;
+}
+
+function ejecutarPaso(){
+  const paso = PASOS[tourIndice];
+  pintarTour();
+  if(paso.ir) irA(paso.ir);
+  try { if(paso.accion) paso.accion(); } catch(e) {}
+  if(tourPausado) return;
+  clearTimeout(tourReloj);
+  tourReloj = setTimeout(() => {
+    if(tourIndice < PASOS.length - 1){ tourIndice++; ejecutarPaso(); }
+    else terminarTour();
+  }, paso.ms);
+}
+
+function iniciarTour(pedirPermiso){
+  audio();
+  if(pedirPermiso !== false) pedirPermisoDeNotificaciones();
+  tourActivo = true; tourPausado = false; tourIndice = 0;
+  $("#tour").classList.add("on");
+  document.body.classList.add("con-tour");
+  $("#btnTour").style.display = "none";
+  $("#tourPausa").textContent = "⏸ Pausa";
+  cerrarModal();
+  ejecutarPaso();
+}
+
+function terminarTour(){
+  tourActivo = false;
+  clearTimeout(tourReloj);
+  quitarFoco();
+  $("#tour").classList.remove("on");
+  document.body.classList.remove("con-tour");
+  $("#btnTour").style.display = "";
+  cerrarModal();
+  confeti(); campanita();
+}
+
+$("#btnTour").onclick = () => iniciarTour(true);
+$("#tourSalir").onclick = terminarTour;
+$("#tourPausa").onclick = () => {
+  tourPausado = !tourPausado;
+  $("#tourPausa").textContent = tourPausado ? "▶ Seguir" : "⏸ Pausa";
+  if(tourPausado) clearTimeout(tourReloj);
+  else ejecutarPaso();
+};
+$("#tourSiguiente").onclick = () => {
+  clearTimeout(tourReloj);
+  if(tourIndice < PASOS.length - 1){ tourIndice++; ejecutarPaso(); }
+  else terminarTour();
+};
+$("#tourAnterior").onclick = () => {
+  clearTimeout(tourReloj);
+  if(tourIndice > 0){ tourIndice--; ejecutarPaso(); }
+};
+
+if(new URLSearchParams(location.search).has("demo")){
+  S.visto = true; guardar();
+  setTimeout(() => iniciarTour(false), 900);
+}
+
+window.MICHI = {
+  notificar, maullido, ronroneo, campanita,
+  tour: iniciarTour, pararTour: terminarTour,
+  permisos: pedirPermisoDeNotificaciones,
+  estado: () => S,
+  reiniciar(){ localStorage.removeItem(LLAVE); location.reload(); },
+  simularAlerta(tipo){
+    if(tipo === "cita") notificar("Recordatorio de control",
+      "Mañana 9:00 a. m. — Control con Hematología, INSN San Borja.", "📅");
+    else if(tipo === "medicina") notificar("Hora de la 6-MP",
+      "Recuerda: de noche, sin leche, y siempre de la misma forma.", "💊");
+    else notificar("Michi te está llamando", "Toca ponerte el dedito.", "🫆");
+  }
+};
+</script>
+</body>
+</html>

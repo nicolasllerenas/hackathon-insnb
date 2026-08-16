@@ -35,13 +35,13 @@ import numpy as np
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
-from yawar.vision import (  # noqa: E402
+from michicheck.vision import (
     detect_events,
     estimate_velocity,
     extract_kymograph,
     stabilize,
 )
-from yawar.vision.segment import fit_diameter_um, segment_capillaries  # noqa: E402
+from michicheck.vision.segment import fit_diameter_um, segment_capillaries
 
 DESTINO = RAIZ / "data" / "real"
 
@@ -49,7 +49,6 @@ BOURQUARD = "https://static-content.springer.com/esm/art%3A10.1038%2Fs41598-018-
 ANFC = "https://raw.githubusercontent.com/thuhci/ANFC-Automated-Nailfold-Capillary/main/Flow_Velocity_Measurement/video_sample/"
 
 FUENTES = [
-    # (nombre, url, fps_real, um_por_px, nota)
     ("bourquard_A.mov", BOURQUARD + "MOESM4_ESM.mov", 60.0, 1.0625,
      "Bourquard 2018 supl. — campo amplio, paciente ASCT"),
     ("bourquard_B.mov", BOURQUARD + "MOESM5_ESM.mov", 60.0, 1.0625,
@@ -84,7 +83,7 @@ def _bajar(url: str, destino: Path) -> bool:
         with urllib.request.urlopen(peticion) as respuesta, open(destino, "wb") as fh:
             fh.write(respuesta.read())
         return True
-    except Exception as error:  # noqa: BLE001
+    except Exception as error:
         print(f"    fallo: {error}")
         return False
 

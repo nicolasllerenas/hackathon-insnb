@@ -21,9 +21,9 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from yawar.model import FEATURE_NAMES, extract_features  # noqa: E402
-from yawar.pipeline import aggregate, analyze_clip  # noqa: E402
-from yawar.synth import (  # noqa: E402
+from michicheck.model import FEATURE_NAMES, extract_features
+from michicheck.pipeline import aggregate, analyze_clip
+from michicheck.synth import (
     CapillaryState,
     OpticalSetup,
     PatientState,
@@ -40,15 +40,6 @@ def simulate_patient(args: tuple[int, float, int]) -> dict | None:
     anc = float(np.exp(rng.uniform(np.log(60.0), np.log(6000.0))))
     patient = PatientState(age_years=age, anc_per_ul=anc)
 
-    # Configuracion del prototipo KittyScope: 530 nm oblicuo, lente invertida
-    # 1:1 sobre OV5640 (paso de pixel 1.4 um) en modo ventana.
-    #
-    # El fototipo se sortea a proposito. La melanina no cambia el contraste
-    # relativo pero si el numero de fotones, y por tanto el ruido: entrenar
-    # con un solo tipo de piel produciria un modelo calibrado para un solo
-    # tipo de paciente, y el sesgo quedaria invisible en las metricas
-    # agregadas. La distribucion refleja la poblacion peruana, con
-    # predominio de fototipos III-V.
     fototipo = str(rng.choice(["II", "III", "IV", "V", "VI"],
                               p=[0.08, 0.27, 0.35, 0.22, 0.08]))
     setup = OpticalSetup(
@@ -62,8 +53,6 @@ def simulate_patient(args: tuple[int, float, int]) -> dict | None:
         photon_scale=float(rng.uniform(600.0, 1800.0)),
         blur_um=float(rng.uniform(2.0, 6.0)),
     )
-    # Diametro y velocidad son propiedades del sujeto: varian poco entre
-    # capilares vecinos del mismo dedo, mucho entre pacientes.
     d0 = float(rng.uniform(9.0, 21.0))
     v0 = float(rng.uniform(350.0, 1400.0))
 

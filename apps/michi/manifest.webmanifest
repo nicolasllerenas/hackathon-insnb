@@ -1,0 +1,21 @@
+{
+  "name": "MichiCheck",
+  "short_name": "Michi",
+  "description": "Tu michi te acompaña, te recuerda tus controles y cuida tus defensas.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E0620",
+  "theme_color": "#160A2A",
+  "lang": "es-PE",
+  "categories": ["health", "medical", "education"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23160A2A'/%3E%3Cpath d='M52 62 L46 26 L82 46 Z' fill='%23A79FC0'/%3E%3Cpath d='M140 62 L146 26 L110 46 Z' fill='%23A79FC0'/%3E%3Cellipse cx='96' cy='102' rx='58' ry='50' fill='%23DCD6E8'/%3E%3Crect x='58' y='84' width='76' height='34' rx='17' fill='%231B1030'/%3E%3Cellipse cx='78' cy='101' rx='11' ry='12' fill='%2322D3EE'/%3E%3Cellipse cx='114' cy='101' rx='11' ry='12' fill='%2322D3EE'/%3E%3Cpath d='M88 126 L104 126 L96 138 Z' fill='%23A855F7'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

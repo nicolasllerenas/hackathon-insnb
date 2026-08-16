@@ -1,6 +1,6 @@
 # Firmware
 
-`yawar_esp32cam/` — ESP32-CAM (AI-Thinker, OV2640), que es el módulo del CAD
+`michicheck_esp32cam/` — ESP32-CAM (AI-Thinker, OV2640), que es el módulo del CAD
 entregado (`esp32_cam.step`, 27.0 × 48.0 mm).
 
 ## Lo único imprescindible antes de tocar el código
@@ -40,7 +40,7 @@ Cabecera de texto de 128 bytes, seguida de fotogramas en escala de grises sin
 comprimir:
 
 ```
-YAWAR1 w=320 h=240 fps=48.30 um_px=2.200 lambda=530 obl=70
+MICHI1 w=320 h=240 fps=48.30 um_px=2.200 lambda=530 obl=70
 ```
 
 **No se graba en JPEG**: los bloques DCT de 8×8 px equivalen a 17.6 µm, justo
