@@ -1,9 +1,9 @@
 # MichiCheck
 
 Sistema de acompañamiento para niños en tratamiento por leucemia linfoblástica
-aguda. Consta de un juguete con forma de gato que vive en casa del paciente, una
-app móvil que usa el niño, y una consola clínica para el equipo del INSN San
-Borja.
+aguda. Consta de un robot con forma de gato que vive en casa del paciente, una
+app que usa el niño con su familia, y una consola clínica para el equipo del
+INSN San Borja.
 
 Hackatón Niño San Borja 2026, Desafío 3 (Ruta Hematológica).
 
@@ -25,34 +25,108 @@ cita.
 
 ---
 
-## Qué hay aquí
+## Arquitectura
+
+Microservicios por dominio dentro de un monorepo. Cada servicio es una función
+independiente en Vercel con su propio esquema en PostgreSQL, y todos comparten
+un mismo paquete de dominio y contratos para que la web y el servidor nunca
+calculen distinto.
+
+![Arquitectura de solución](arquitectura/michicheck-arquitectura.png)
+
+El diagrama editable está en
+[`arquitectura/michicheck-arquitectura.drawio`](arquitectura/michicheck-arquitectura.drawio):
+se abre directo en [app.diagrams.net](https://app.diagrams.net) con
+*Archivo → Abrir desde → Dispositivo*.
+
+```mermaid
+flowchart LR
+  subgraph Casa
+    Michi["Michi · ESP32-CAM"]
+    App["App «Mi michi» · PWA"]
+  end
+  subgraph INSN
+    Consola["Consola clínica"]
+  end
+  Michi -- "USB · latidos JSON" --> App
+  App -- HTTPS --> GW["/api/v1/*"]
+  Consola -- "HTTPS · token" --> GW
+  GW --> C[clinica] --> BC[(clinica)]
+  GW --> D[dispositivos] --> BD[(dispositivos)]
+  GW --> I[interop] --> BI[(interop)]
+  GW --> V[investigacion] --> BV[(investigacion)]
+  I -. "ORU^R01 · FHIR" .-> Galenus
+  V -. "CSV anonimizado" .-> CIEI
+  Optico["Análisis óptico · Python"] -. "ANC + IC95" .-> C
+```
+
+| Servicio | Ruta | Qué guarda | Qué resuelve |
+|---|---|---|---|
+| Clínico | `/api/v1/clinica` | pacientes, citas, hemogramas, tamizajes, teleconsultas, referencias | Triaje en tres estados, cola de atención, rutas de la familia por código de vinculación |
+| Dispositivos | `/api/v1/dispositivos` | michis, latidos | Registro del robot, telemetría y salud del enlace (72 h sin latido = sin contacto) |
+| Interoperabilidad | `/api/v1/interop` | mensajes | HL7 v2.5.1 ORU^R01 y FHIR R4 PE Core, siempre como resultado preliminar |
+| Investigación | `/api/v1/investigacion` | participantes | Consentimiento, asentimiento y código seudonimizado para el estudio |
+| Análisis óptico | Python, puerto 8000 | — | Del vídeo capilar al ANC con su intervalo de confianza |
+
+Algunas decisiones que conviene conocer:
+
+- **El servidor es la fuente de verdad.** El servicio clínico recalcula el
+  triaje de cada tamizaje que recibe; lo que mande el cliente no se usa para
+  decidir la conducta.
+- **El mismo código corre en dos lugares.** Los servicios son clases que
+  dependen de una interfaz de almacén. En Vercel usan PostgreSQL; en el
+  navegador usan IndexedDB. Así la app funciona sin red y la demostración no
+  depende de la conexión del auditorio.
+- **Contratos con Zod** compartidos entre la web y los servicios. Una petición
+  que no cumple el contrato se rechaza con el detalle del campo.
+- **Seguridad por tipo de usuario.** El equipo clínico entra con un token
+  Bearer. La familia y el michi solo con su código de vinculación, que se
+  guarda como hash. Cada escritura queda en la tabla de auditoría de su esquema.
+
+### Estructura
 
 ```
-apps/michi/          App del niño. HTML/CSS/JS sin dependencias.
-apps/insn/           Consola clínica. Igual, sin dependencias.
-src/michicheck/      El paquete Python.
-services/api/        API FastAPI (24 rutas).
-firmware/            Firmware del ESP32-CAM con bocina.
-scripts/             Generación de dataset, figuras y demo.
-tests/               89 pruebas.
+compartido/           Dominio, contratos Zod, almacenes, clientes HTTP y semilla
+  dominio/            Óptica, triaje, estados, enlace, alertas, red, HL7/FHIR, métricas
+  almacen/            Interfaz única: SQL (pg y PGlite), IndexedDB y memoria
+servicios/            Un directorio por microservicio (servicio, rutas, esquema)
+  analisis_optico/    API FastAPI del pipeline óptico
+  plataforma/         HTTP, autenticación, conexión y migraciones
+api/                  Una función de Vercel por servicio
+web/                  React 19 + Vite: portada, consola (/insn) y app del niño (/michi)
+src/michicheck/       Paquete Python: física, visión, modelo, triaje, interoperabilidad
+firmware/             Firmware del ESP32-CAM con bocina
+arquitectura/         Diagrama de solución en draw.io y PNG
+scripts/              Base de datos, demo, dataset y figuras
+tests/                Pruebas del paquete Python
 ```
-
-Dentro del paquete:
-
-| Módulo | Qué resuelve |
-|---|---|
-| `optics.py` | Modelo físico: de huecos ópticos por minuto a recuento estimado |
-| `illumination.py` | Absorción a 530 nm, fototipos, presupuesto de fotones |
-| `vision/` | Estabilización, segmentación, kimografo, velocimetría, detección |
-| `pipeline.py` | Del vídeo al recuento con su intervalo de confianza |
-| `model.py` | Corrección del sesgo y probabilidad calibrada |
-| `triage.py` | Conducta clínica a partir del tamizaje |
-| `companion/` | Etapas, enrolamiento, alertas, estado del juguete, referencias |
-| `interop/` | HL7 v2 ORU^R01 y FHIR R4 con perfiles PE Core |
 
 ---
 
 ## Correr el proyecto
+
+Hace falta Node.js 22.22 o superior y Python 3.10 o superior.
+
+```bash
+npm ci
+npm run dev
+```
+
+Eso abre la portada en `http://localhost:5173`, la consola en `/insn` y la app
+del niño en `/michi/`. En desarrollo los cuatro microservicios corren dentro del
+mismo servidor de Vite, en `/api/v1/*`.
+
+Para revisar todo antes de subir cambios:
+
+```bash
+npm run verificar
+```
+
+Corre la verificación de tipos, el linter, las pruebas (dominio, servicios
+sobre memoria y sobre PostgreSQL embebido, e interfaz) y la compilación de
+producción.
+
+El pipeline óptico en Python:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -60,20 +134,74 @@ pip install -e '.[api,viz,dev]'
 pytest -q
 ```
 
-Para levantar todo junto:
+Y para levantar todo junto con el guion de la demo:
 
 ```bash
 bash scripts/demo.sh
 ```
 
-Eso deja la API en el 8000 y las dos interfaces en el 8080. Ambas apps traen un
-recorrido guiado que se reproduce solo; se activa con el botón DEMO o añadiendo
-`?demo=1` a la URL.
+Ambas apps traen un recorrido guiado que se reproduce solo; se activa con el
+botón DEMO o añadiendo `?demo=1` a la URL.
 
-Las interfaces no llaman a la API. Funcionan solas, sin red y sin cargar nada de
-un CDN. Los maullidos y el ronroneo están sintetizados con la Web Audio API
-dentro de la propia página. Eso fue a propósito: en una demostración en vivo lo
-que más falla es la conexión.
+---
+
+## Base de datos
+
+La app tiene dos modos y se cambia entre ellos desde **Consola → Base de
+datos**.
+
+| Modo | Dónde viven los datos | Cuándo usarlo |
+|---|---|---|
+| Local | IndexedDB del navegador | Demostraciones, uso sin red, pruebas |
+| Servidor | PostgreSQL detrás de los microservicios | Piloto con datos compartidos entre la consola y las familias |
+
+Desde esa misma pantalla se descarga un respaldo en JSON, se restaura, se carga
+la demostración, se migra lo local al servidor, se vacía la base, se recorren
+los registros de cada colección y se ve el SQL de cada esquema.
+
+### Variables de entorno
+
+| Variable | Dónde | Para qué |
+|---|---|---|
+| `DATABASE_URL` | Servidor | Cadena de conexión de PostgreSQL. También se acepta `POSTGRES_URL` |
+| `MICHICHECK_TOKEN` | Servidor | Token del equipo clínico, de 16 caracteres o más. Sin él las rutas clínicas responden 503 |
+| `VITE_MODO_DATOS` | Compilación | `servidor` para que la app arranque en modo servidor; si no, arranca en local |
+
+En local se ponen en `.env.local`, que está fuera del repositorio.
+
+### Comandos
+
+```bash
+npm run db:migrar     # crea los cuatro esquemas y aplica las migraciones pendientes
+npm run db:semilla    # vacía y carga los seis pacientes de demostración
+npm run db:vaciar     # borra todos los datos y conserva las tablas
+npx tsx scripts/db.ts sql   # imprime el DDL completo
+```
+
+Las migraciones también corren solas la primera vez que un servicio recibe una
+petición, con un bloqueo consultivo para que dos funciones no las apliquen a la
+vez.
+
+---
+
+## Conectar el robot
+
+El michi se conecta por USB desde **Consola → Dispositivos** con Chrome o Edge
+de escritorio (Web Serial, 115 200 baudios). El firmware manda cada latido como
+una línea JSON:
+
+```json
+{"latido":1,"bateria_pct":82,"capturas_en_cola":0,"alertas_emitidas":4,"alertas_atendidas":3,"silenciamientos":0,"escalado":false,"firmware":"0.3.0"}
+```
+
+y acepta órdenes de una letra: `T` pide el dedito, `C` recuerda la cita, `M`
+maúlla y `L` pide un latido. Cada latido recibido se guarda en el servicio de
+dispositivos para la serie elegida. Si no hay robot a mano, el botón **Usar
+simulador** emite latidos cada ocho segundos.
+
+El servicio de dispositivos ya acepta que el michi publique sus latidos por
+HTTPS con su serie y el código de vinculación en la cabecera `x-michi-codigo`;
+el firmware actual todavía los entrega por USB.
 
 ---
 
@@ -96,7 +224,7 @@ clase de seguridad del software baja de C a B según IEC 62304.
 
 ---
 
-## El silencio del juguete
+## El silencio del robot
 
 El michi manda un latido cada seis horas. Si deja de mandarlo por más de 72
 horas, el caso entra a la cola clínica como grave aunque el último tamizaje
@@ -106,18 +234,17 @@ La lógica es simple: no sabemos cómo está ese niño y llevamos días sin sabe
 Y a diferencia de la cita perdida, esta señal llega en tres días y no en cuatro
 semanas.
 
-También se cuentan los silenciamientos. Si la familia apaga el juguete tres
-veces seguidas sin hacer el tamizaje, el michi deja de insistir y avisa al
-instituto.
+También se cuentan los silenciamientos. Si la familia apaga el robot tres veces
+seguidas sin hacer el tamizaje, el michi deja de insistir y avisa al instituto.
 
 ---
 
 ## Cuando la familia no puede viajar a Lima
 
-`companion/referencias.py` tiene cargada la red: 10 centros oncológicos
-pediátricos (que están solo en Lima, La Libertad, Arequipa y Cusco) y 20
-hospitales regionales que pueden hacer hemograma, hemocultivo, antibiótico de
-amplio espectro, transfusión y hospitalización pediátrica.
+La red cargada tiene 10 centros oncológicos pediátricos (que están solo en
+Lima, La Libertad, Arequipa y Cusco) y 20 hospitales regionales que pueden
+hacer hemograma, hemocultivo, antibiótico de amplio espectro, transfusión y
+hospitalización pediátrica.
 
 Cuando la teleconsulta concluye que hace falta atención presencial, el sistema
 busca el establecimiento capaz más cercano al domicilio y emite la referencia
@@ -160,8 +287,8 @@ Elegimos una regresión logística de cuatro variables porque gradient boosting
 daba lo mismo y no es auditable.
 
 La cohorte de entrenamiento es simulada, n=300. Es la limitación más grande que
-tenemos. La validación real son 30–50 vídeos con hemograma pareado, y eso pasa
-por el comité de ética del instituto.
+tenemos. La validación real son vídeos con hemograma pareado, y eso pasa por el
+comité de ética del instituto.
 
 ### Lo que no hace
 
@@ -173,14 +300,42 @@ explícito para que nadie lo confunda dentro de seis meses.
 
 ---
 
+## Investigación y validación
+
+**Consola → Investigación** acompaña la ruta de continuidad del INSNSB: reunión
+inicial, proyecto de investigación con asesor, presentación al instituto,
+aprobación y ejecución.
+
+- **Participantes.** Registro con consentimiento del apoderado, asentimiento del
+  niño y un código seudonimizado `MCK-E-###` que es lo único que sale del
+  instituto.
+- **Desempeño frente al hemograma.** Empareja cada hemograma con el tamizaje
+  más cercano dentro de 24 horas y calcula sensibilidad, especificidad, VPP y
+  VPN con intervalos de Wilson, el AUC, F1 y la concordancia de Bland-Altman
+  en escala logarítmica.
+- **Tamaño de muestra.** Fórmula de Buderer con la prevalencia, la sensibilidad
+  esperada y la precisión que se fijen con la asesora.
+- **Conjunto anonimizado.** CSV con diccionario de variables para el comité de
+  ética, sin nombres ni historias clínicas y protegido contra inyección de
+  fórmulas al abrirse en Excel.
+
+Con los datos de demostración el punto de operación clasifica bien a los casos
+con neutropenia, pero la especificidad es baja. Esa conversación (punto de
+corte, muestra y si el IC95 debe anclarse a la fracción de neutrófilos del
+último hemograma del paciente) es la que hay que tener con la asesora antes de
+cerrar el protocolo.
+
+---
+
 ## Integración con Galenus
 
-Cada tamizaje sale como mensaje HL7 v2 ORU^R01 y como Bundle FHIR R4 con los
-perfiles nacionales del MINSA. La correlación con el paciente se hace por
-historia clínica, que queda enlazada con la serie del dispositivo en el primer
-control, cuando el médico entrega el juguete. Un michi corresponde a un paciente
-durante todo el tratamiento, así que no hace falta emparejar por nombre ni por
-fecha de nacimiento.
+Cada tamizaje sale como mensaje HL7 v2.5.1 ORU^R01 y como Bundle FHIR R4 con los
+perfiles nacionales del MINSA. Ambos van con estado preliminar y el recuento en
+`/uL` (UCUM). La correlación con el paciente se hace por historia clínica, que
+queda enlazada con la serie del dispositivo en el primer control, cuando el
+médico entrega el robot. Un michi corresponde a un paciente durante todo el
+tratamiento, así que no hace falta emparejar por nombre ni por fecha de
+nacimiento.
 
 Lo que falta no es desarrollo. Falta el endpoint, las credenciales y el ambiente
 de pruebas de la OGTI del instituto.
@@ -189,15 +344,25 @@ de pruebas de la OGTI del instituto.
 
 ## Despliegue
 
-Las dos interfaces son estáticas y se publican en Vercel desde la raíz:
+Vercel compila la web con `npm run build`, publica `dist/` en su CDN y crea una
+función por cada archivo de `api/`. La configuración está en `vercel.json`.
 
 ```bash
+vercel login
 vercel deploy --prod
 ```
 
-La configuración está en `vercel.json`. Al estar en HTTPS funcionan las
-notificaciones push del sistema operativo y la app del niño se puede instalar
-como PWA en el celular.
+Para el modo servidor:
+
+1. En el proyecto de Vercel, **Storage → Marketplace → Neon** (PostgreSQL). Al
+   conectarlo, Vercel agrega `DATABASE_URL` sola.
+2. En **Settings → Environment Variables**, agregar `MICHICHECK_TOKEN` (por
+   ejemplo con `openssl rand -hex 24`) y `VITE_MODO_DATOS=servidor`.
+3. Volver a desplegar. Los esquemas se crean en la primera petición, o antes
+   con `npm run db:migrar` apuntando a la misma `DATABASE_URL`.
+4. En la consola, **Base de datos → Origen de los datos**, pegar el token.
+
+Sin base de datos el despliegue sigue funcionando en modo local.
 
 ---
 
@@ -205,12 +370,13 @@ como PWA en el celular.
 
 Funciona y está probado: el modelo físico, el pipeline de visión, el
 clasificador, los tres estados, el planificador de alertas, el estado del
-dispositivo, la red de referencias, las dos interfaces, el firmware y la
-generación de HL7 y FHIR.
+dispositivo, la red de referencias, los cuatro microservicios con PostgreSQL,
+la app del niño, la consola clínica, la conexión con el robot por USB, el
+módulo de investigación, el firmware y la generación de HL7 y FHIR.
 
-Falta: validación clínica con pacientes reales, confirmación de los códigos
-RENIPRESS, el acuerdo de interoperabilidad con la OGTI, y la firma de un médico
-en el protocolo clínico.
+Falta: validación clínica con pacientes reales, la aprobación del proyecto por
+el comité de ética, confirmación de los códigos RENIPRESS, el acuerdo de
+interoperabilidad con la OGTI, y la firma de un médico en el protocolo clínico.
 
 ---
 

@@ -48,12 +48,17 @@ limpiar() {
 trap limpiar EXIT INT TERM
 
 echo "  levantando API..."
-"$PY" -m uvicorn services.api.main:app --host 127.0.0.1 --port 8000 \
+"$PY" -m uvicorn servicios.analisis_optico.main:app --host 127.0.0.1 --port 8000 \
   --log-level warning &
 API_PID=$!
 
-echo "  levantando interfaces..."
-"$PY" -m http.server 8080 --directory apps --bind 127.0.0.1 >/dev/null 2>&1 &
+echo "  levantando interfaces y microservicios..."
+if ! command -v npm >/dev/null 2>&1; then
+  echo "  ERROR: hace falta Node.js 22.22 o superior para las interfaces."
+  exit 1
+fi
+[ -d node_modules ] || npm ci --silent
+npx vite --port 8080 --strictPort --host 127.0.0.1 >/dev/null 2>&1 &
 WEB_PID=$!
 
 for _ in $(seq 1 40); do
@@ -71,8 +76,9 @@ cat <<'FIN'
   ✓ Todo listo.
 
     App del NIÑO y su familia:      http://127.0.0.1:8080/michi/
-    Consola clínica del INSNSB:     http://127.0.0.1:8080/insn/
-    API y documentación:            http://127.0.0.1:8000/docs
+    Consola clínica del INSNSB:     http://127.0.0.1:8080/insn
+    Microservicios (TypeScript):    http://127.0.0.1:8080/api/v1/{clinica,dispositivos,interop,investigacion}/salud
+    Análisis óptico (Python):       http://127.0.0.1:8000/docs
 
   DOS SISTEMAS, UN SOLO BACKEND
 

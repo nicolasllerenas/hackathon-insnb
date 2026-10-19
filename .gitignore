@@ -6,6 +6,13 @@ __pycache__/
 .vercel/
 .env*
 
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+test-results/
+playwright-report/
+
 data/
 models/*.pkl
 logs/
@@ -16,3 +23,5 @@ notebooks/
 *.pptx
 *.zip
 src/*.egg-info/
+
+.playwright-mcp/
