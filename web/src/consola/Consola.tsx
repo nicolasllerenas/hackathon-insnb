@@ -1,12 +1,15 @@
 import "../estilos/consola.css";
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, Route, Routes, useNavigate, useSearchParams } from "react-router";
+import { NavLink, Route, Routes, useLocation, useNavigate, useSearchParams } from "react-router";
+import { esErrorMichi } from "@compartido/errores";
 import { Cargando } from "../componentes/Estados";
 import { Tour } from "../componentes/Tour";
+import { usePacientes } from "../datos/consultas";
 import { useDatos } from "../datos/contexto";
 import { prepararDemostracionLocal } from "../datos/plataforma";
 import { pedirPermisoDeNotificaciones } from "../notificaciones";
 import { Cola } from "./Cola";
+import { ConectarServidor } from "./Conectar";
 import { Datos } from "./Datos";
 import { Dispositivos } from "./Dispositivos";
 import { Enrolar } from "./Enrolar";
@@ -47,8 +50,12 @@ function Navegacion() {
 }
 
 export default function Consola() {
-  const { plataforma, avisarCambio } = useDatos();
+  const { plataforma, avisarCambio, accesoClinico } = useDatos();
   const navegar = useNavigate();
+  const { pathname } = useLocation();
+  const pacientes = usePacientes();
+  const tokenRechazado = plataforma.modo === "servidor" && esErrorMichi(pacientes.error) && pacientes.error.codigo === "no_autorizado";
+  const pedirToken = (!accesoClinico || tokenRechazado) && !pathname.startsWith("/insn/datos");
   const [parametros, setParametros] = useSearchParams();
   const [listo, setListo] = useState(false);
   const [tour, setTour] = useState(false);
@@ -69,12 +76,12 @@ export default function Consola() {
   }, [plataforma, avisarCambio]);
 
   useEffect(() => {
-    if (listo && parametros.has("demo")) {
+    if (listo && !pedirToken && parametros.has("demo")) {
       const t = window.setTimeout(() => setTour(true), 700);
       return () => window.clearTimeout(t);
     }
     return undefined;
-  }, [listo, parametros]);
+  }, [listo, pedirToken, parametros]);
 
   const pasos = useMemo(() => crearPasosTour(navegar, plataforma.modo), [navegar, plataforma.modo]);
 
@@ -104,7 +111,7 @@ export default function Consola() {
             <small>UAIE · INSN San Borja</small>
           </span>
         </span>
-        {!tour ? (
+        {!tour && !pedirToken ? (
           <button
             type="button"
             className="boton cian chico"
@@ -120,7 +127,11 @@ export default function Consola() {
       <div className="marco">
         <Navegacion />
         <main className="contenido" id="contenido">
-          {listo ? (
+          {!listo ? (
+            <Cargando texto="Preparando los datos…" />
+          ) : pedirToken ? (
+            <ConectarServidor rechazado={tokenRechazado} />
+          ) : (
             <Routes>
               <Route index element={<Tablero />} />
               <Route path="alertas" element={<Cola />} />
@@ -134,8 +145,6 @@ export default function Consola() {
               <Route path="datos" element={<Datos />} />
               <Route path="*" element={<p className="vacio">Sección no encontrada.</p>} />
             </Routes>
-          ) : (
-            <Cargando texto="Preparando los datos…" />
           )}
           <footer className="pie-consola">
             MichiCheck · Hackatón Niño San Borja 2026 · Desafío 3: Ruta Hematológica. Tamizaje óptico no invasivo: orienta y prioriza, no diagnostica ni

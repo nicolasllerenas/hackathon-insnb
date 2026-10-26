@@ -8,55 +8,62 @@ import { useDatos } from "./contexto";
 import type { NombreServicio, Plataforma } from "./plataforma";
 
 export function usePacientes(): UseQueryResult<Paciente[]> {
-  const { plataforma } = useDatos();
-  return useQuery({ queryKey: [plataforma.modo, "clinica", "pacientes"], queryFn: () => plataforma.clinica.listarPacientes() });
+  const { plataforma, accesoClinico } = useDatos();
+  return useQuery({ queryKey: [plataforma.modo, "clinica", "pacientes"], queryFn: () => plataforma.clinica.listarPacientes(), enabled: accesoClinico });
 }
 
 export function usePaciente(id: string | undefined): UseQueryResult<Paciente> {
-  const { plataforma } = useDatos();
+  const { plataforma, accesoClinico } = useDatos();
   return useQuery({
     queryKey: [plataforma.modo, "clinica", "paciente", id],
     queryFn: () => plataforma.clinica.obtenerPaciente(id as string),
-    enabled: Boolean(id),
+    enabled: accesoClinico && Boolean(id),
   });
 }
 
 export function useRegistros<K extends ColeccionDePaciente>(coleccion: K, pacienteId?: string): UseQueryResult<RegistroClinico[K][]> {
-  const { plataforma } = useDatos();
+  const { plataforma, accesoClinico } = useDatos();
   return useQuery({
     queryKey: [plataforma.modo, "clinica", "registros", coleccion, pacienteId ?? "todos"],
     queryFn: () => plataforma.clinica.listarRegistros(coleccion, pacienteId),
+    enabled: accesoClinico,
   });
 }
 
 export function useParque(): UseQueryResult<EstadoMichi[]> {
-  const { plataforma } = useDatos();
+  const { plataforma, accesoClinico } = useDatos();
   return useQuery({
     queryKey: [plataforma.modo, "dispositivos", "parque"],
     queryFn: () => plataforma.dispositivos.parque(),
+    enabled: accesoClinico,
     refetchInterval: 30_000,
   });
 }
 
 export function useLatidos(serie: string | null | undefined, limite = 40): UseQueryResult<Latido[]> {
-  const { plataforma } = useDatos();
+  const { plataforma, accesoClinico } = useDatos();
   return useQuery({
     queryKey: [plataforma.modo, "dispositivos", "latidos", serie, limite],
     queryFn: () => plataforma.dispositivos.listarLatidos(serie as string, limite),
-    enabled: Boolean(serie),
+    enabled: accesoClinico && Boolean(serie),
   });
 }
 
 export function useParticipantes(): UseQueryResult<Participante[]> {
-  const { plataforma } = useDatos();
-  return useQuery({ queryKey: [plataforma.modo, "investigacion", "participantes"], queryFn: () => plataforma.investigacion.listarParticipantes() });
+  const { plataforma, accesoClinico } = useDatos();
+  return useQuery({
+    queryKey: [plataforma.modo, "investigacion", "participantes"],
+    queryFn: () => plataforma.investigacion.listarParticipantes(),
+    enabled: accesoClinico,
+  });
 }
 
 export function useMensajes(pacienteId?: string): UseQueryResult<Mensaje[]> {
-  const { plataforma } = useDatos();
+  const { plataforma, accesoClinico } = useDatos();
   return useQuery({
     queryKey: [plataforma.modo, "interop", "mensajes", pacienteId ?? "todos"],
     queryFn: () => plataforma.interop.listarMensajes(pacienteId),
+    enabled: accesoClinico,
   });
 }
 

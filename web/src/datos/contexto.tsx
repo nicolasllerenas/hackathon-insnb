@@ -7,6 +7,7 @@ import { crearPlataforma, type NombreServicio, type Plataforma } from "./platafo
 interface ContextoDatos {
   plataforma: Plataforma;
   config: Configuracion;
+  accesoClinico: boolean;
   cambiarConfiguracion: (config: Configuracion) => void;
   avisarCambio: (servicios: NombreServicio[]) => void;
 }
@@ -70,7 +71,11 @@ function Interno({ children }: { children: ReactNode }) {
     [qc],
   );
 
-  const valor = useMemo(() => ({ plataforma, config, cambiarConfiguracion, avisarCambio }), [plataforma, config, cambiarConfiguracion, avisarCambio]);
+  const accesoClinico = config.modo === "local" || config.token.trim().length > 0;
+  const valor = useMemo(
+    () => ({ plataforma, config, accesoClinico, cambiarConfiguracion, avisarCambio }),
+    [plataforma, config, accesoClinico, cambiarConfiguracion, avisarCambio],
+  );
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>;
 }
 
